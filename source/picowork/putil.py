@@ -2,14 +2,10 @@ from math import *
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Vector2:
     x: float = 0
     y: float = 0
-
-    def __init__(self, x = 0, y = 0):
-        self.x = x
-        self.y = y
 
     def __neg__(self):
         return Vector2(-self.x, -self.y)

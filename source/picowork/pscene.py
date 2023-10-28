@@ -5,7 +5,7 @@ class PScene:
 
     def draw(self):
         for element in self._elements:
-            element.draw(None)
+            element.draw(None, False)
 
     def add_element(self, element):
         self._elements.append(element)

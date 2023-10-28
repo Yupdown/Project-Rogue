@@ -1,7 +1,7 @@
 from pico2d import *
 
+PIXEL_PER_UNIT = 100
 _image_register = {}
-
 
 def _list_files_recursively(directory, action):
     for root, _, files in os.walk(directory):
