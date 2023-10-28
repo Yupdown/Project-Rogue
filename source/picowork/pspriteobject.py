@@ -8,7 +8,7 @@ class PSpriteObject(PObject):
         self._image = get_image(file_name)
 
     def on_draw(self):
-        v = camera.screen_position(self._concatenated_position)
+        v = camera.world_to_screen(self._concatenated_position)
         w = self._image.w * self._concatenated_scale.x
         h = self._image.h * self._concatenated_scale.y
         s = camera.screen_size(Vector2(w, h)) / PIXEL_PER_UNIT

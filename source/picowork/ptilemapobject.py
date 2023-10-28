@@ -16,21 +16,32 @@ class PTileMapObject(PObject):
         return self._tilemap[x][y]
 
     def on_draw(self):
-        for x in range(len(self._tilemap)):
-            for y in range(len(self._tilemap[x])):
+        w = self._size * self._concatenated_scale.x
+        h = self._size * self._concatenated_scale.y
+        s = camera.screen_size(Vector2(w, h))
+        lr = radians(self._concatenated_rotation)
+
+        bl = camera.screen_to_world(Vector2(0, 0))
+        tr = camera.screen_to_world(Vector2(get_canvas_width(), get_canvas_height()))
+
+        xmin = max(0, floor((bl.x - self._concatenated_position.x) / w))
+        xmax = min(len(self._tilemap[0]), ceil((tr.x - self._concatenated_position.x) / w))
+        ymin = max(0, floor((bl.y - self._concatenated_position.y) / h))
+        ymax = min(len(self._tilemap), ceil((tr.y - self._concatenated_position.y) / h))
+
+        print((xmax - xmin) * (ymax - ymin))
+
+        for x in range(xmin, xmax):
+            for y in range(ymin, ymax):
                 image = self._tilemap[x][y]
                 if image is None:
                     continue
 
-                w = self._size * self._concatenated_scale.x
-                h = self._size * self._concatenated_scale.y
                 lv = Vector2((x + 0.5) * w, (y + 0.5) * h)
-                lr = radians(self._concatenated_rotation)
                 if lr != 0:
                     lv = Vector2(lv.x * cos(lr) - lv.y * sin(lr), lv.x * sin(lr) + lv.y * cos(lr))
 
-                v = camera.screen_position(self._concatenated_position + lv)
-                s = camera.screen_size(Vector2(w, h))
+                v = camera.world_to_screen(self._concatenated_position + lv)
                 rad = radians(camera.screen_rotation(self._concatenated_rotation))
 
                 if rad != 0:
