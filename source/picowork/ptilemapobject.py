@@ -6,6 +6,8 @@ from .presource import *
 class PTileMapObject(PObject):
     def __init__(self, w, h, s):
         super().__init__()
+        self._w = w
+        self._h = h
         self._tilemap = [[None for _ in range(h)] for _ in range(w)]
         self._size = s
 
@@ -25,11 +27,9 @@ class PTileMapObject(PObject):
         tr = camera.screen_to_world(Vector2(get_canvas_width(), get_canvas_height()))
 
         xmin = max(0, floor((bl.x - self._concatenated_position.x) / w))
-        xmax = min(len(self._tilemap[0]), ceil((tr.x - self._concatenated_position.x) / w))
+        xmax = min(self._w, ceil((tr.x - self._concatenated_position.x) / w))
         ymin = max(0, floor((bl.y - self._concatenated_position.y) / h))
-        ymax = min(len(self._tilemap), ceil((tr.y - self._concatenated_position.y) / h))
-
-        print((xmax - xmin) * (ymax - ymin))
+        ymax = min(self._h, ceil((tr.y - self._concatenated_position.y) / h))
 
         for x in range(xmin, xmax):
             for y in range(ymin, ymax):

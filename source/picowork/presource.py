@@ -1,12 +1,13 @@
 from pico2d import *
 
-PIXEL_PER_UNIT = 100
+PIXEL_PER_UNIT = 32
 _image_register = {}
 
 def _list_files_recursively(directory, action):
     for root, _, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
+            yield 'Load: image - ' + file_path
             action(file_path)  # Replace this with your desired action
 
 
