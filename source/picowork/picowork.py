@@ -8,7 +8,17 @@ current_scene = PScene()
 
 def initialize(w, h):
     open_canvas(w, h)
-    presource.load_images()
+    hide_lattice()
+
+    font = load_font('DungGeunMo.ttf', 16)
+    splash_image = load_image("resource/splash.png")
+
+    for str_log in presource.load_images():
+        clear_canvas()
+        splash_image.draw(w / 2, h / 2)
+        font.draw(2, 10, str_log, (0, 0, 0))
+        update_canvas()
+
 
 
 def event_update():

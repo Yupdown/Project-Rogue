@@ -15,12 +15,11 @@ def add_image(path):
     file_name = os.path.basename(path)
     image = load_image(path)
     _image_register[file_name] = image
-    print('Load: image - ' + file_name + ' (' + path + ')')
 
 
 def load_images():
     directory = 'resource'
-    _list_files_recursively(directory, add_image)
+    return _list_files_recursively(directory, add_image)
 
 
 def get_image(file_name):
