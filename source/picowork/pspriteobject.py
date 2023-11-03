@@ -3,9 +3,12 @@ from .pcamera import *
 from .presource import *
 
 class PSpriteObject(PObject):
-    def __init__(self, file_name):
+    def __init__(self, image):
         super().__init__()
-        self._image = get_image(file_name)
+        if type(image) is str:
+            self._image = get_image(image)
+        else:
+            self._image = image
 
     def on_draw(self):
         v = camera.world_to_screen(self._concatenated_position)
