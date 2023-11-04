@@ -15,10 +15,9 @@ def initialize(w, h):
 
     for str_log in presource.load_images():
         clear_canvas()
-        # splash_image.draw(w / 2, h / 2)
+        splash_image.draw(w / 2, h / 2)
         font.draw(2, 10, str_log, (0, 0, 0))
         update_canvas()
-
 
 
 def event_update():

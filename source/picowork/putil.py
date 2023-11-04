@@ -33,3 +33,7 @@ class Vector2:
 
     def magnitude(self):
         return sqrt(self.x ** 2 + self.y ** 2)
+
+
+def lerp(a, b, t):
+    return a + (b - a) * t
