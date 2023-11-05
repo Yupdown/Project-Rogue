@@ -4,6 +4,7 @@ from tilemap import *
 from player import *
 from picowork.pspriteobject import *
 from picowork.pscrollpattern import *
+from picowork.pfixedbackground import *
 
 time_begin = time.time()
 time_current = 0
@@ -22,16 +23,13 @@ def main_update():
     time_current = time_new
 
     t = time_current if not picowork.pinput.get_button(SDL_BUTTON_LEFT) else time_current * 2
-    # tile_map.set_rotation(sin(t * 20) * 10)
-    # camera._rotation = sin(t * 10)
-    # camera._size = 5 + sin(t * 40) * 0.1
 
     new_campos = camera._position + (player.get_position() - camera._position) * delta_time * 8
     magnitude = clamp(-0.5, (new_campos - camera._position).x * 50, 0.5)
 
-    camera._size = 3.5
     camera._position = new_campos
     camera._rotation = magnitude
+    # camera._rotation = sin(t * 10)
 
     player.update(delta_time)
 
@@ -40,13 +38,24 @@ def main_update():
 
 picowork.initialize(1280, 720)
 
+background_sky = PFixedBackground('skybox.png')
+picowork.current_scene.add_element(background_sky)
+
 background = PScrollPattern('bg01_far.png', 3)
-background.set_position(Vector2(0, 5))
+background.set_position(Vector2(0, 8))
 picowork.current_scene.add_element(background)
 
-background_near = PScrollPattern('bg01_mid.png', 2.5)
-background_near.set_position(Vector2(0, 4))
-picowork.current_scene.add_element(background_near)
+background_near0 = PScrollPattern('bg01_mid.png', 2.5)
+background_near0.set_position(Vector2(0, 6))
+picowork.current_scene.add_element(background_near0)
+
+background_near1 = PScrollPattern('bg01_mid.png', 2.0)
+background_near1.set_position(Vector2(0, 5))
+picowork.current_scene.add_element(background_near1)
+
+background_near2 = PScrollPattern('bg01_mid.png', 1.75)
+background_near2.set_position(Vector2(0, 4))
+picowork.current_scene.add_element(background_near2)
 
 tilemap = Tilemap(32, 20, 'terr02_%02d.png', 'fill02.png')
 for x in range(32):
