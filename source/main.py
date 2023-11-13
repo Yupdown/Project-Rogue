@@ -15,9 +15,6 @@ def main_update():
     global player
     global time_current
 
-    global background
-    global background_near
-
     time_new = time.time() - time_begin
     delta_time = min(time_new - time_current, 0.1)
     time_current = time_new
@@ -42,31 +39,31 @@ background_sky = PFixedBackground('skybox.png')
 picowork.current_scene.add_element(background_sky)
 
 background = PScrollPattern('bg01_far.png', 3)
-background.set_position(Vector2(0, 8))
+background.set_position(Vector2(0, 14))
 picowork.current_scene.add_element(background)
 
 background_near0 = PScrollPattern('bg01_mid.png', 2.5)
-background_near0.set_position(Vector2(0, 6))
+background_near0.set_position(Vector2(0, 12))
 picowork.current_scene.add_element(background_near0)
 
 background_near1 = PScrollPattern('bg01_mid.png', 2.0)
-background_near1.set_position(Vector2(0, 5))
+background_near1.set_position(Vector2(0, 11))
 picowork.current_scene.add_element(background_near1)
 
 background_near2 = PScrollPattern('bg01_mid.png', 1.75)
-background_near2.set_position(Vector2(0, 4))
+background_near2.set_position(Vector2(0, 10))
 picowork.current_scene.add_element(background_near2)
 
-tilemap = Tilemap(32, 20, 'terr02_%02d.png', 'fill02.png')
+tilemap = Tilemap(32, 32, 'terr02_%02d.png', 'fill02.png')
 for x in range(32):
-    for y in range(20):
-        dist = sqrt((x - 15.5) ** 2 * 0.5 + (y - 9.5) ** 2)
+    for y in range(32):
+        dist = sqrt((x - 15.5) ** 2 * 0.5 + (y - 15.5) ** 2)
         cond = dist > 5.5
         tilemap.set_tile(x, y, cond)
 picowork.current_scene.add_element(tilemap)
 
 player = Player(tilemap)
-player.set_position(Vector2(16, 5))
+player.set_position(Vector2(16, 12))
 picowork.current_scene.add_element(player)
 camera._position = Vector2(10, 5)
 

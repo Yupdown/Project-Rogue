@@ -12,35 +12,52 @@ class Player(PObject):
         self.velocity = Vector2()
         self.force = Vector2(0, -30)
         self.velocity_max = Vector2(5, 10)
+        self.friction = 30
         self.ref_tile_map = tile_map
-        self.landed = False
+        self.collision = 0
+        self.climb_time = 0
 
     def update(self, delta_time):
+        climb = 0
+        self.climb_time -= delta_time
         if get_key(SDLK_a):
             self.force = Vector2(-100, self.force.y)
             self.renderer.set_scale(Vector2(1.0, 1.0))
+            if self.collision & 4 and self.velocity.y < 0:
+                self.velocity = Vector2(0, 0)
+                climb = 1
         elif get_key(SDLK_d):
             self.force = Vector2(100, self.force.y)
             self.renderer.set_scale(Vector2(-1.0, 1.0))
+            if self.collision & 8 and self.velocity.y < 0:
+                self.velocity = Vector2(0, 0)
+                climb = 2
         else:
             self.force = Vector2(0, self.force.y)
 
-        if get_keydown(SDLK_SPACE) and self.landed:
-            self.velocity = Vector2(self.velocity.x, 30)
+        if get_keydown(SDLK_SPACE):
+            if self.collision & 2:
+                self.velocity = Vector2(self.velocity.x, 30)
+            elif climb > 0:
+                self.velocity = Vector2(200 if climb == 1 else -200, 30)
+                self.climb_time = 0.5
 
         self.velocity += self.force * delta_time
+        vm = self.velocity_max
         self.velocity = Vector2(
-            clamp(-self.velocity_max.x, self.velocity.x, self.velocity_max.x),
-            clamp(-self.velocity_max.y, self.velocity.y, self.velocity_max.y))
+            clamp(-vm.x, self.velocity.x, vm.x),
+            clamp(-vm.y, self.velocity.y, vm.y))
+
+        f = self.friction if self.collision & 2 else self.friction * 0.5
         if self.velocity.x > 0:
-            self.velocity = Vector2(max(self.velocity.x - 30 * delta_time, 0), self.velocity.y)
+            self.velocity = Vector2(max(self.velocity.x - f * delta_time, 0), self.velocity.y)
         else:
-            self.velocity = Vector2(min(self.velocity.x + 30 * delta_time, 0), self.velocity.y)
+            self.velocity = Vector2(min(self.velocity.x + f * delta_time, 0), self.velocity.y)
 
         pre_pos = self.get_position()
         post_pos = pre_pos + self.velocity * delta_time
 
-        self.landed = self.ref_tile_map.apply_velocity(self, pre_pos, post_pos)[0]
+        self.collision = self.ref_tile_map.apply_velocity(self, pre_pos, post_pos)
         self.renderer.root.set_rotation(-self.velocity.x * 3)
 
 class PlayerRenderer(PObject):

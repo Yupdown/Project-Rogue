@@ -93,8 +93,7 @@ class Tilemap(PObject):
         pre_vel = obj.velocity
         post_vel = pre_vel
 
-        landed = False
-        collided = False
+        collision_mask = 0
 
         x_min = floor(pre_pos.x - w * 0.5)
         x_max = ceil(pre_pos.x + w * 0.5) - 1
@@ -106,13 +105,12 @@ class Tilemap(PObject):
                 if pre_vel.y < 0 and self.get_tile(x, y_min) > 0:
                     post_pos = Vector2(post_pos.x, y_min + 1)
                     post_vel = Vector2(post_vel.x, 0)
-                    landed = True
-                    collided = True
+                    collision_mask |= 2
                     break
                 if pre_vel.y > 0 and self.get_tile(x, y_max) > 0:
                     post_pos = Vector2(post_pos.x, y_max - h)
                     post_vel = Vector2(post_vel.x, 0)
-                    collided = True
+                    collision_mask |= 1
                     break
 
         if post_pos.x - w * 0.5 < 0:
@@ -133,15 +131,15 @@ class Tilemap(PObject):
                 if pre_vel.x < 0 and self.get_tile(x_min, y) > 0:
                     post_pos = Vector2(x_min + 1 + w * 0.5, post_pos.y)
                     post_vel = Vector2(0, post_vel.y)
-                    collided = True
+                    collision_mask |= 4
                     break
                 if pre_vel.x > 0 and self.get_tile(x_max, y) > 0:
                     post_pos = Vector2(x_max - w * 0.5, post_pos.y)
                     post_vel = Vector2(0, post_vel.y)
-                    collided = True
+                    collision_mask |= 8
                     break
 
         obj.set_position(post_pos)
         obj.velocity = post_vel
 
-        return landed, collided
+        return collision_mask

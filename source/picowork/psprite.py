@@ -14,7 +14,18 @@ class PSprite:
         self.h = h
 
     def draw(self, x, y, w = None, h = None):
-        self._image.clip_draw(self.x, self.y, self.w, self.h, x, y, w, h)
+        self.rotate_draw(0, x, y, w, h)
 
     def rotate_draw(self, rad, x, y, w = None, h = None):
-        self._image.clip_composite_draw(self.x, self.y, self.w, self.h, rad, '', x, y, w, h)
+        flip = ''
+        if w is None:
+            w = self.w
+        if h is None:
+            h = self.h
+        if w < 0:
+            w = abs(w)
+            flip += 'h'
+        if h < 0:
+            h = abs(h)
+            flip += 'v'
+        self._image.clip_composite_draw(self.x, self.y, self.w, self.h, rad, flip, x, y, w, h)
