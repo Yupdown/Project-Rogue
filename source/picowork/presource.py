@@ -6,6 +6,8 @@ _image_register = {}
 def _list_files_recursively(directory, action):
     for root, _, files in os.walk(directory):
         for file in files:
+            if not file.endswith('.png'):
+                continue
             file_path = os.path.join(root, file)
             yield 'Load: image - ' + file_path
             action(file_path)  # Replace this with your desired action
