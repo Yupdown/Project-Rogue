@@ -2,6 +2,7 @@ import time
 from picowork import picowork
 from tilemap import *
 from player import *
+from tilemapgeneration import *
 from picowork.pspriteobject import *
 from picowork.pscrollpattern import *
 from picowork.pfixedbackground import *
@@ -26,7 +27,8 @@ def main_update():
 
     camera._position = new_campos
     camera._rotation = magnitude
-    # camera._rotation = sin(t * 10)
+    camera._size = 1 + 4 * (t % 1) ** 0.05
+    camera._rotation = sin(t * 40) * 6 * (1 - (t % 1)) ** 4
 
     player.update(delta_time)
 
@@ -34,6 +36,7 @@ def main_update():
 
 
 picowork.initialize(1280, 720)
+load_rooms()
 
 background_sky = PFixedBackground('skybox.png')
 picowork.current_scene.add_element(background_sky)
@@ -54,16 +57,12 @@ background_near2 = PScrollPattern('bg01_mid.png', 1.75)
 background_near2.set_position(Vector2(0, 10))
 picowork.current_scene.add_element(background_near2)
 
-tilemap = Tilemap(32, 32, 'terr02_%02d.png', 'fill02.png')
-for x in range(32):
-    for y in range(32):
-        dist = sqrt((x - 15.5) ** 2 * 0.5 + (y - 15.5) ** 2)
-        cond = dist > 5.5
-        tilemap.set_tile(x, y, cond)
+tilemap = Tilemap(256, 32, 'terr02_%02d.png', 'fill02.png')
+generate_tilemap(tilemap, 256, 32)
 picowork.current_scene.add_element(tilemap)
 
 player = Player(tilemap)
-player.set_position(Vector2(16, 12))
+player.set_position(Vector2(9.5, 9.5))
 picowork.current_scene.add_element(player)
 camera._position = Vector2(10, 5)
 
