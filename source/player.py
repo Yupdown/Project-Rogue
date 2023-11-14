@@ -16,6 +16,7 @@ class Player(PObject):
         self.ref_tile_map = tile_map
         self.collision = 0
         self.climb_time = 0
+        self.run_factor = 0
 
     def update(self, delta_time):
         climb = 0
@@ -57,8 +58,14 @@ class Player(PObject):
         pre_pos = self.get_position()
         post_pos = pre_pos + self.velocity * delta_time
 
+        self.run_factor += delta_time * self.velocity.x * 6
+
         self.collision = self.ref_tile_map.apply_velocity(self, pre_pos, post_pos)
-        self.renderer.root.set_rotation(-self.velocity.x * 3)
+
+        if self.collision & 2:
+            self.renderer.root.set_rotation(-self.velocity.x * (sin(self.run_factor) + 1.5) * 3)
+        else:
+            self.renderer.root.set_rotation(0)
 
 class PlayerRenderer(PObject):
     def __init__(self, image):
