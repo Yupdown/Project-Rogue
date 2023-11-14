@@ -15,18 +15,18 @@ class PCamera:
         v = self._position + v * (self._size / hh)
         return v
 
-    def world_to_screen(self, world_position: Vector2):
+    def world_to_screen(self, world_position: Vector2, rotation_factor = 1):
         hw = get_canvas_width() / 2
         hh = get_canvas_height() / 2
         v = world_position - self._position
         if self._rotation != 0:
-            rad = -radians(self._rotation)
+            rad = -radians(self._rotation * rotation_factor)
             v = Vector2(v.x * cos(rad) - v.y * sin(rad), v.x * sin(rad) + v.y * cos(rad))
         v = Vector2(hw, hh) + v * (hh / self._size)
         return v
 
-    def screen_rotation(self, world_rotation: float):
-        return world_rotation - self._rotation
+    def screen_rotation(self, world_rotation: float, rotation_factor = 1):
+        return world_rotation - self._rotation * rotation_factor
 
     def screen_size(self, world_size: Vector2):
         hh = get_canvas_height() / 2

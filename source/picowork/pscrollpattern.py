@@ -25,11 +25,11 @@ class PScrollPattern(PSpriteObject):
         s = camera.screen_size(Vector2(w, h))
         sp = camera.screen_size(Vector2(w, hp))
 
-        rad = radians(camera.screen_rotation(self._concatenated_rotation))
+        rad = radians(camera.screen_rotation(self._concatenated_rotation, t ** 2))
 
         for tx in range(n):
-            v = camera.world_to_screen(Vector2(bx + (tx + 0.5) * w, wv.y))
-            vp = camera.world_to_screen(Vector2(bx + (tx + 0.5) * w, wv.y - (h + hp) * 0.5))
+            v = camera.world_to_screen(Vector2(bx + (tx + 0.5) * w, wv.y), t ** 2)
+            vp = camera.world_to_screen(Vector2(bx + (tx + 0.5) * w, wv.y - (h + hp) * 0.5), t ** 2)
             if rad != 0:
                 self._image.rotate_draw(rad, floor(v.x), floor(v.y), ceil(s.x), ceil(s.y))
                 self._image.clip_composite_draw(0, 0, self._image.w, 1, rad, '', floor(vp.x), floor(vp.y), ceil(sp.x), ceil(sp.y))

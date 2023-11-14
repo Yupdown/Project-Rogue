@@ -26,10 +26,10 @@ class PTileMapObject(PObject):
         bl = camera.screen_to_world(Vector2(0, 0))
         tr = camera.screen_to_world(Vector2(get_canvas_width(), get_canvas_height()))
 
-        xmin = max(0, floor((bl.x - self._concatenated_position.x) / w))
-        xmax = min(self._w, ceil((tr.x - self._concatenated_position.x) / w))
-        ymin = max(0, floor((bl.y - self._concatenated_position.y) / h))
-        ymax = min(self._h, ceil((tr.y - self._concatenated_position.y) / h))
+        xmin = max(0, floor((bl.x - self._concatenated_position.x) / w) - 1)
+        xmax = min(self._w, ceil((tr.x - self._concatenated_position.x) / w) + 1)
+        ymin = max(0, floor((bl.y - self._concatenated_position.y) / h) - 1)
+        ymax = min(self._h, ceil((tr.y - self._concatenated_position.y) / h) + 1)
 
         for x in range(xmin, xmax):
             for y in range(ymin, ymax):
