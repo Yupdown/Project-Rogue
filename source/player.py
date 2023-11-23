@@ -7,7 +7,7 @@ from picowork.pinput import *
 class Player(PObject):
     def __init__(self, tile_map):
         super().__init__()
-        self.renderer = PlayerRenderer(get_image('avatar_body0005.png'))
+        self.renderer = PlayerRenderer(get_image('avatar_body0001.png'))
         self.add_element(self.renderer)
         self.velocity = Vector2()
         self.force = Vector2(0, -30)
@@ -63,7 +63,11 @@ class Player(PObject):
         self.collision = self.ref_tile_map.apply_velocity(self, pre_pos, post_pos)
 
         if self.collision & 2:
-            self.renderer.root.set_rotation(-self.velocity.x * (sin(self.run_factor) + 1.5) * 3)
+            self.renderer.root.set_rotation(-self.velocity.x * (sin(self.run_factor) + 1.5) * 2)
+            self.renderer.joint_shoulder_l.set_rotation(-self.velocity.x * sin(self.run_factor / 2) * 15 - 15)
+            self.renderer.joint_shoulder_r.set_rotation(-self.velocity.x * sin(self.run_factor / 2 + math.pi) * 15 + 15)
+            self.renderer.joint_hip_l.set_rotation(-self.velocity.x * sin(self.run_factor / 2 + math.pi) * 10)
+            self.renderer.joint_hip_r.set_rotation(-self.velocity.x * sin(self.run_factor / 2) * 10)
         else:
             self.renderer.root.set_rotation(0)
 
@@ -72,48 +76,68 @@ class PlayerRenderer(PObject):
         super().__init__()
         self.root = PObject()
 
+        self.joint_hips = PObject()
+        self.joint_hip_l = PObject()
+        self.joint_hip_r = PObject()
+        self.joint_shoulder_l = PObject()
+        self.joint_shoulder_r = PObject()
+
         self.sobj_head = PSpriteObject(PSprite(image, 0, 20, 16, 12))
         self.sobj_head_back = PSpriteObject(PSprite(image, 16, 20, 16, 12))
         self.sobj_body = PSpriteObject(PSprite(image, 0, 10, 10, 10))
         self.sobj_body_back = PSpriteObject(PSprite(image, 10, 10, 10, 10))
-        self.sobj_hips = PSpriteObject(PSprite(image, 20, 2, 8, 8))
+        # self.sobj_hips = PSpriteObject(PSprite(image, 20, 2, 8, 8))
         self.sobj_eye_l = PSpriteObject(PSprite(image, 14, 0, 2, 2))
         self.sobj_eye_r = PSpriteObject(PSprite(image, 16, 0, 2, 2))
 
-        self.sobj_arm_bl = PSpriteObject(PSprite(image, 20, 15, 4, 5))
-        self.sobj_arm_br = PSpriteObject(PSprite(image, 24, 15, 4, 5))
-        self.sobj_leg_bl = PSpriteObject(PSprite(image, 0, 0, 6, 5))
-        self.sobj_leg_br = PSpriteObject(PSprite(image, 6, 0, 6, 5))
+        self.sobj_arm_bl = PSpriteObject(PSprite(image, 22, 14, 2, 4))
+        self.sobj_arm_br = PSpriteObject(PSprite(image, 26, 14, 2, 4))
+        self.sobj_leg_bl = PSpriteObject(PSprite(image, 3, 0, 2, 4))
+        self.sobj_leg_br = PSpriteObject(PSprite(image, 9, 0, 2, 4))
 
-        self.sobj_body.set_position(Vector2(0.02, 0.18))
-        self.sobj_body_back.set_position(Vector2(0.02, 0.18))
-        self.sobj_head.set_position(Vector2(0.015, 0.37))
-        self.sobj_head_back.set_position(Vector2(0.1, 0.37))
+        self.joint_hips.set_position(Vector2(0.0, 3.5) / PIXEL_PER_UNIT)
+        self.joint_hip_l.set_position(Vector2(-1, 0) / PIXEL_PER_UNIT)
+        self.joint_hip_r.set_position(Vector2(3, 0) / PIXEL_PER_UNIT)
+        self.joint_shoulder_l.set_position(Vector2(-1, 3.5) / PIXEL_PER_UNIT)
+        self.joint_shoulder_r.set_position(Vector2(2, 3.5) / PIXEL_PER_UNIT)
+        self.joint_shoulder_l.set_rotation(-15)
+        self.joint_shoulder_r.set_rotation(15)
 
-        self.sobj_arm_bl.set_position(Vector2(-0.07, 0.125))
-        self.sobj_arm_br.set_position(Vector2(0.08, 0.125))
-        self.sobj_arm_bl.set_rotation(-10.0)
-        self.sobj_arm_br.set_rotation(10.0)
+        self.sobj_body.set_position(Vector2(0, 2.5) / PIXEL_PER_UNIT)
+        self.sobj_body_back.set_position(Vector2(0, -0.5) / PIXEL_PER_UNIT)
+        self.sobj_head.set_position(Vector2(0, 8.5) / PIXEL_PER_UNIT)
+        self.sobj_head_back.set_position(Vector2(4, -5) / PIXEL_PER_UNIT)
 
-        self.sobj_leg_bl.set_position(Vector2(-0.04, 0.045))
-        self.sobj_leg_br.set_position(Vector2(0.05, 0.045))
-        self.sobj_hips.set_position(Vector2(-0.01, 0.12))
+        self.sobj_arm_bl.set_position(Vector2(0, -4.5) / PIXEL_PER_UNIT)
+        self.sobj_arm_br.set_position(Vector2(0, -4.5) / PIXEL_PER_UNIT)
 
-        self.sobj_eye_l.set_position(Vector2(-0.05, 0.31))
-        self.sobj_eye_r.set_position(Vector2(0.0425, 0.31))
+        self.sobj_leg_bl.set_position(Vector2(0, -3) / PIXEL_PER_UNIT)
+        self.sobj_leg_br.set_position(Vector2(0, -3) / PIXEL_PER_UNIT)
+        # self.sobj_hips.set_position(Vector2(-0.01, 0.12))
+
+        self.sobj_eye_l.set_position(Vector2(-2, -2) / PIXEL_PER_UNIT)
+        self.sobj_eye_r.set_position(Vector2(1, -2) / PIXEL_PER_UNIT)
 
         self.add_element(self.root)
 
-        self.root.add_element(self.sobj_arm_bl)
-        self.root.add_element(self.sobj_leg_bl)
-        self.root.add_element(self.sobj_leg_br)
+        self.joint_hip_l.add_element(self.sobj_leg_bl)
+        self.joint_hip_r.add_element(self.sobj_leg_br)
 
-        self.root.add_element(self.sobj_body_back)
-        self.root.add_element(self.sobj_body)
-        self.root.add_element(self.sobj_hips)
-        self.root.add_element(self.sobj_head_back)
-        self.root.add_element(self.sobj_head)
+        self.joint_shoulder_l.add_element(self.sobj_arm_bl)
+        self.joint_shoulder_r.add_element(self.sobj_arm_br)
 
-        self.root.add_element(self.sobj_arm_br)
-        self.root.add_element(self.sobj_eye_l)
-        self.root.add_element(self.sobj_eye_r)
+        self.joint_hips.add_element(self.joint_hip_l)
+        self.joint_hips.add_element(self.joint_hip_r)
+
+        self.joint_hips.add_element(self.joint_shoulder_l)
+        self.joint_hips.add_element(self.sobj_body_back)
+        self.joint_hips.add_element(self.sobj_body)
+        self.joint_hips.add_element(self.joint_shoulder_r)
+        self.joint_hips.add_element(self.sobj_head)
+
+        self.sobj_head.add_element(self.sobj_head_back)
+
+        self.root.add_element(self.joint_hips)
+
+        self.sobj_head.add_element(self.sobj_eye_l)
+        self.sobj_head.add_element(self.sobj_eye_r)
