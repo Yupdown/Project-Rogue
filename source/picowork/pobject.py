@@ -24,7 +24,8 @@ class PObject:
                 self._concatenated_position = Vector2(cos(r) * v.x - sin(r) * v.y, sin(r) * v.x + cos(r) * v.y) + parent._concatenated_position
             else:
                 self._concatenated_position = v + parent._concatenated_position
-            self._concatenated_rotation = parent._concatenated_rotation + self._local_rotation
+            sign = 1 if parent._concatenated_scale.x * parent._concatenated_scale.y >= 0 else -1
+            self._concatenated_rotation = parent._concatenated_rotation + self._local_rotation * sign
             self._concatenated_scale = Vector2(parent._concatenated_scale.x * self._local_scale.x, parent._concatenated_scale.y * self._local_scale.y)
         self._transform_dirty = False
 
@@ -57,7 +58,7 @@ class PObject:
         return self._local_rotation
 
     def set_rotation(self, value: float):
-        self._local_rotation = value
+        self._local_rotation = (value + 180) % 360 - 180
         self._transform_dirty = True
 
     def get_scale(self):
