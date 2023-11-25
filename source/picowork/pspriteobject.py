@@ -11,12 +11,16 @@ class PSpriteObject(PObject):
         v = camera.world_to_screen(self._concatenated_position)
         w = self._image.w * self._concatenated_scale.x
         h = self._image.h * self._concatenated_scale.y
-        s = camera.screen_size(Vector2(w, h)) / PIXEL_PER_UNIT
         rad = radians(camera.screen_rotation(self._concatenated_rotation))
-        if rad != 0:
-            self._image.rotate_draw(rad, v.x, v.y, s.x, s.y)
-        else:
-            self._image.draw(v.x, v.y, s.x, s.y)
+        flip = ''
+        if w < 0:
+            w = abs(w)
+            flip += 'h'
+        if h < 0:
+            h = abs(h)
+            flip += 'v'
+        s = camera.screen_size(Vector2(w, h)) / PIXEL_PER_UNIT
+        self._image.composite_draw(rad, flip, v.x, v.y, s.x, s.y)
 
     def set_image(self, image):
         if type(image) is str:
