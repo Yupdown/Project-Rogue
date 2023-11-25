@@ -16,36 +16,48 @@ class Player(PObject):
         self.ref_tile_map = tile_map
         self.collision = 0
         self.wall_jump = 0
+        self.coyote_jump = 0
         self.run_factor = 0
         self.animator = CharacterAnimator()
+        self.climb = 0
 
     def update(self, delta_time):
         self.wall_jump -= delta_time
-        climb = 0
+        self.coyote_jump -= delta_time
 
         if not self.wall_jump > 0:
             if get_key(SDLK_a):
                 self.force = Vector2(-100, self.force.y)
                 self.renderer.root.set_scale(Vector2(1.0, 1.0))
-                if self.collision & 4 and self.velocity.y < 0:
-                    self.velocity = Vector2(0, 0)
-                    climb = 1
+                if self.collision & 4 and not self.collision & 2:
+                    if self.velocity.y < 0:
+                        self.velocity = Vector2(0, 0)
+                    self.climb = 1
+                    self.coyote_jump = 0.15
             elif get_key(SDLK_d):
                 self.force = Vector2(100, self.force.y)
                 self.renderer.root.set_scale(Vector2(-1.0, 1.0))
-                if self.collision & 8 and self.velocity.y < 0:
-                    self.velocity = Vector2(0, 0)
-                    climb = 2
+                if self.collision & 8 and not self.collision & 2:
+                    if self.velocity.y < 0:
+                        self.velocity = Vector2(0, 0)
+                    self.climb = 2
+                    self.coyote_jump = 0.15
             else:
                 self.force = Vector2(0, self.force.y)
+        else:
+            if self.climb == 1:
+                self.renderer.root.set_scale(Vector2(1.0, 1.0))
+            elif self.climb == 2:
+                self.renderer.root.set_scale(Vector2(-1.0, 1.0))
 
         if get_keydown(SDLK_SPACE):
-            if self.collision & 2:
-                self.velocity = Vector2(self.velocity.x, 30)
-            elif climb > 0:
-                self.force = Vector2(30 if climb == 1 else -30, self.force.y)
-                self.velocity = Vector2(30 if climb == 1 else -30, 30)
-                self.wall_jump = 0.44
+            if self.coyote_jump > 0:
+                if self.climb > 0:
+                    self.force = Vector2(30 if self.climb == 1 else -30, self.force.y)
+                    self.velocity = Vector2(30 if self.climb == 1 else -30, 30)
+                    self.wall_jump = 0.44
+                else:
+                    self.velocity = Vector2(self.velocity.x, 30)
 
         self.velocity += self.force * delta_time
         vm = self.velocity_max
@@ -67,6 +79,10 @@ class Player(PObject):
         self.collision = self.ref_tile_map.apply_velocity(self, pre_pos, post_pos)
         if self.collision & 14:
             self.wall_jump = 0
+
+        if self.collision & 2:
+            self.climb = 0
+            self.coyote_jump = 0.15
 
         if self.collision & 2:
             if abs(self.velocity.x) > 0.1:
@@ -97,7 +113,6 @@ class PlayerRenderer(PObject):
         self.sobj_head_back = PSpriteObject(PSprite(image, 16, 20, 16, 12))
         self.sobj_body = PSpriteObject(PSprite(image, 0, 10, 10, 10))
         self.sobj_body_back = PSpriteObject(PSprite(image, 10, 10, 10, 10))
-        # self.sobj_hips = PSpriteObject(PSprite(image, 20, 2, 8, 8))
         self.sobj_eye_l = PSpriteObject(PSprite(image, 14, 0, 2, 2))
         self.sobj_eye_r = PSpriteObject(PSprite(image, 16, 0, 2, 2))
 
@@ -108,7 +123,7 @@ class PlayerRenderer(PObject):
 
         self.joint_hips.set_position(Vector2(0.0, 3.5) / PIXEL_PER_UNIT)
         self.joint_hip_l.set_position(Vector2(-1, 0) / PIXEL_PER_UNIT)
-        self.joint_hip_r.set_position(Vector2(3, 0) / PIXEL_PER_UNIT)
+        self.joint_hip_r.set_position(Vector2(2, 0) / PIXEL_PER_UNIT)
         self.joint_shoulder_l.set_position(Vector2(-1, 3.5) / PIXEL_PER_UNIT)
         self.joint_shoulder_r.set_position(Vector2(2, 3.5) / PIXEL_PER_UNIT)
         self.joint_shoulder_l.set_rotation(-15)
@@ -124,7 +139,6 @@ class PlayerRenderer(PObject):
 
         self.sobj_leg_bl.set_position(Vector2(0, -3) / PIXEL_PER_UNIT)
         self.sobj_leg_br.set_position(Vector2(0, -3) / PIXEL_PER_UNIT)
-        # self.sobj_hips.set_position(Vector2(-0.01, 0.12))
 
         self.sobj_eye_l.set_position(Vector2(-2, -2) / PIXEL_PER_UNIT)
         self.sobj_eye_r.set_position(Vector2(1, -2) / PIXEL_PER_UNIT)
@@ -139,7 +153,6 @@ class PlayerRenderer(PObject):
 
         self.joint_hips.add_element(self.joint_hip_l)
         self.joint_hips.add_element(self.joint_hip_r)
-
         self.joint_hips.add_element(self.joint_shoulder_l)
         self.joint_hips.add_element(self.sobj_body_back)
         self.joint_hips.add_element(self.sobj_body)
@@ -170,6 +183,8 @@ class AnimationIdle:
     def update(character, renderer, delta_time):
         renderer.root.set_rotation(0)
         renderer.joint_hips.set_rotation(0)
+        renderer.joint_shoulder_l.set_rotation(-15)
+        renderer.joint_shoulder_r.set_rotation(15)
 
 
 class AnimationMove:
@@ -199,7 +214,6 @@ class AnimationJumpRoll:
     def update(character, renderer, delta_time):
             renderer.root.set_rotation(0)
             renderer.joint_hips.set_rotation(renderer.joint_hips.get_rotation() - 2000 * delta_time)
-
 
 class AnimationClimb:
     @staticmethod
