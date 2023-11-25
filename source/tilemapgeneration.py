@@ -37,3 +37,10 @@ def generate_tilemap(tilemap, w, h):
                 y = sy + dy
                 if room[2][dy][dx] == '0':
                     tilemap.set_tile(x, y, False)
+
+def generate_tilemap_village(tilemap, w, h):
+    for x in range(w):
+        for y in range(h):
+            if y > 8:
+                continue
+            tilemap.set_tile(x, y, True)

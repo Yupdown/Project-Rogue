@@ -1,10 +1,11 @@
+import time
 from pico2d import *
 from .pscene import *
 from . import pinput
 from . import presource
 
-current_scene = PScene()
-
+time_begin = time.time()
+time_current = 0
 
 def initialize(w, h):
     open_canvas(w, h)
@@ -29,6 +30,14 @@ def event_update():
     return flag
 
 
+def update():
+    global time_current
+    time_new = time.time() - time_begin
+    delta_time = min(time_new - time_current, 0.1)
+    time_current = time_new
+    if current_scene is not None:
+        current_scene.update(delta_time)
+
 def render_update():
     clear_canvas()
     current_scene.draw()
@@ -37,3 +46,11 @@ def render_update():
 
 def close():
     close_canvas()
+
+
+def change_scene(scene):
+    global current_scene
+    current_scene = scene
+
+
+change_scene(PScene())

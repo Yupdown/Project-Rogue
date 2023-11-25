@@ -5,10 +5,7 @@ from .presource import *
 class PSpriteObject(PObject):
     def __init__(self, image):
         super().__init__()
-        if type(image) is str:
-            self._image = get_image(image)
-        else:
-            self._image = image
+        self.set_image(image)
 
     def on_draw(self):
         v = camera.world_to_screen(self._concatenated_position)
@@ -20,3 +17,9 @@ class PSpriteObject(PObject):
             self._image.rotate_draw(rad, v.x, v.y, s.x, s.y)
         else:
             self._image.draw(v.x, v.y, s.x, s.y)
+
+    def set_image(self, image):
+        if type(image) is str:
+            self._image = get_image(image)
+        else:
+            self._image = image

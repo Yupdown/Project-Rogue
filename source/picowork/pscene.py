@@ -3,6 +3,9 @@ class PScene:
     def __init__(self):
         self._elements = []
 
+    def update(self, delta_time):
+        pass
+
     def draw(self):
         for element in self._elements:
             element.draw(None, False)
