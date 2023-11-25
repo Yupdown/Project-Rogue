@@ -23,12 +23,19 @@ class Portal(PObject):
         self.player = player
         self.portal_callback = portal_callback
         self.time = 0
+        self.near = False
 
     def update(self, delta_time):
         self.time += delta_time
+
         self.visual.set_rotation(self.time * -360)
+        self.indicator.set_position(Vector2(0, sin(self.time * 10) * 0.05 + 1.2))
 
         near = (self.player.get_position() - self.get_position()).sqr_magnitude() < 1
-        self.indicator.set_scale(lerp(self.indicator.get_scale(), Vector2(1, 1) if near else Vector2(1, 0), delta_time * 32))
+        if near and not self.near:
+            self.indicator.set_scale(Vector2(1, 2))
+        self.indicator.set_scale(lerp(self.indicator.get_scale(), Vector2(1, 1) if near else Vector2(1, 0), delta_time * 24))
         if near and get_keydown(SDLK_w):
             self.portal_callback()
+        self.near = near
+        
