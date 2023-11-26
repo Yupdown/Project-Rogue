@@ -38,4 +38,3 @@ class Portal(PObject):
         if near and get_keydown(SDLK_w):
             self.portal_callback()
         self.near = near
-        

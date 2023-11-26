@@ -44,8 +44,8 @@ class PSceneVillage(PScene):
         self.add_element(self.tilemap)
 
         self.player = Player(self.tilemap)
-        self.player.set_position(Vector2(9.5, 9.5))
-        self.add_element(self.player)
+        self.player.set_position(Vector2(9.5, 9))
+        self.add_element(self.player, 2)
 
         import scenemanagement
         self.portal = Portal(self.player, scenemanagement.load_scene_dungeon)
