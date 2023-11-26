@@ -9,6 +9,7 @@ class PObject:
         self._concatenated_position = Vector2(0, 0)
         self._concatenated_rotation = 0
         self._concatenated_scale = Vector2(1, 1)
+        self._parent = None
         self._elements = []
         self._transform_dirty = True
 
@@ -42,10 +43,18 @@ class PObject:
 
     def add_element(self, element):
         self._elements.append(element)
+        element._parent = self
 
     def remove_element(self, element):
         if element in self._elements:
             self._elements.remove(element)
+            element._parent = None
+
+    def remove_from_parent(self):
+        self._parent.remove_element(self)
+
+    def get_parent(self):
+        return self._parent
 
     def get_position(self):
         return self._local_position
