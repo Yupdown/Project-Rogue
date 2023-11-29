@@ -5,6 +5,7 @@ from picowork.pfixedbackground import *
 from tilemapgeneration import *
 from tilemap import *
 from portal import *
+from coin import *
 
 
 class PSceneVillage(PScene):
@@ -52,6 +53,10 @@ class PSceneVillage(PScene):
         self.portal.set_position(Vector2(16, 9.5))
         self.add_element(self.portal)
 
+        self.coin = Coin(self.tilemap, self.player)
+        self.coin.set_position(Vector2(8, 9.5))
+        self.add_element(self.coin)
+
         camera._position = self.player.get_position()
 
     def update(self, delta_time):
@@ -66,3 +71,4 @@ class PSceneVillage(PScene):
 
         self.player.update(delta_time)
         self.portal.update(delta_time)
+        self.coin.update(delta_time)
