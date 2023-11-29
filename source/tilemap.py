@@ -41,7 +41,7 @@ class Tilemap(PObject):
             for dy in range(0, min(2, self._h - y)):
                 solid[dx][dy] = self._tilemap[x + dx][y + dy] > 0
 
-        self._tilemap_back.set_tile(x, y, self._image_back if solid[0][0] else None)
+        self._tilemap_back.set_tile(x, y, self._image_back if solid[0][0] or self._tilemap[x][y] < 0 else None)
 
         if solid[0][0] and not solid[0][1]:
             image_grid[0][1] = 2

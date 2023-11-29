@@ -29,22 +29,22 @@ class PSceneDungeon(PScene):
         background_near2.set_position(Vector2(0, 10))
         self.add_element(background_near2)
 
-        self.tilemap = Tilemap(128, 64, 'terr02_%02d.png', 'fill02.png')
+        self.tilemap = Tilemap(160, 100, 'terr02_%02d.png', 'fill02.png')
         self.add_element(self.tilemap)
 
         self.player = Player(self.tilemap)
-        self.player.set_position(Vector2(9.5, 9))
+        self.player.set_position(Vector2(18.5, 10))
         self.add_element(self.player, 2)
 
         import scenemanagement
         self.portal = Portal(self.player, scenemanagement.load_scene_village)
-        self.portal.set_position(Vector2(10, 9.5))
+        self.portal.set_position(Vector2(18.5, 10.5))
         self.add_element(self.portal)
 
         camera._position = self.player.get_position()
 
     def generate_dungeon(self):
-        return generate_tilemap(self.tilemap, 128, 64)
+        return generate_tilemap(self.tilemap, self.tilemap._w, self.tilemap._h, 20)
 
     def update(self, delta_time):
         new_campos = camera._position + (self.player.get_position() - camera._position) * delta_time * 8
