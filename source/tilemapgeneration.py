@@ -1,4 +1,5 @@
 import random
+import time
 from pico2d import *
 from math import *
 from picowork.putil import *
@@ -43,12 +44,20 @@ def generate_tilemap(tilemap, w, h, room_count):
     generated_rooms = []
     passages = []
 
-    begin_room = Room(10, 10, 16, 12)
+    print('=== Dungeon Generation Procedure ===')
+    print('Note: Rooms may not connect properly depending on the settled positions of the rooms')
+    print()
+
+    print('> Making virtual Rooms')
+    print('Number of rooms: %d' % (room_count + 2))
+    print()
+
+    begin_room = Room(10, dungeon_height // 2 - 6, 16, 12)
     begin_room.name = 'START ROOM'
     begin_room.fixed = True
     begin_room.facet_from = (begin_room.w, 1)
 
-    end_room = Room(dungeon_width - 24 - 10, dungeon_height - 16 - 10, 24, 16)
+    end_room = Room(dungeon_width - 24 - 10, dungeon_height // 2 - 8, 24, 16)
     end_room.name = 'BOSS ROOM'
     end_room.fixed = True
     end_room.facet_to = (-1, 1)
@@ -72,7 +81,20 @@ def generate_tilemap(tilemap, w, h, room_count):
     generated_rooms.insert(0, begin_room)
     generated_rooms.append(end_room)
 
-    for sample in range(1 << 12):
+    sample_time = 2
+
+    print('> Simulating to settle the rooms')
+    print('Simulation time estimation: %ds' % sample_time)
+    print()
+
+    last_time = time.time()
+    while sample_time > 0:
+        yield
+        t = time.time()
+        delta_time = t - last_time
+        sample_time -= delta_time
+        last_time = t
+
         for i in range(len(generated_rooms)):
 
             x = generated_rooms[i].x + generated_rooms[i].w / 2
@@ -83,7 +105,7 @@ def generate_tilemap(tilemap, w, h, room_count):
             d2 = x - dungeon_width
             d3 = y - dungeon_height
 
-            mul = 10
+            mul = 10000 * delta_time
             force = Vector2(0, 0)
             force += Vector2(1, 0) / d0 ** 2 * mul
             force += Vector2(0, 1) / d1 ** 2 * mul
@@ -101,7 +123,7 @@ def generate_tilemap(tilemap, w, h, room_count):
                 dx = x - xp
                 dy = y - yp
 
-                sqr_magnitude = dx ** 2 + dy ** 2
+                sqr_magnitude = max(dx ** 2 + dy ** 2, 1)
                 magnitude = sqrt(sqr_magnitude)
                 ndx = clamp(-1, dx / magnitude, 1)
                 ndy = clamp(-1, dy / magnitude, 1)
@@ -113,11 +135,12 @@ def generate_tilemap(tilemap, w, h, room_count):
                 if not generated_rooms[j].fixed:
                     generated_rooms[j].x -= ndx / sqr_magnitude * mul
                     generated_rooms[j].y -= ndy / sqr_magnitude * mul
-        yield None
 
     for room in generated_rooms:
         room.x = floor(room.x)
         room.y = floor(room.y)
+
+    print('> Generating edges for MST')
 
     edges = []
     for i in range(len(generated_rooms)):
@@ -132,6 +155,8 @@ def generate_tilemap(tilemap, w, h, room_count):
             dy = (generated_rooms[j].y + generated_rooms[j].facet_to[1]) - (generated_rooms[i].y + generated_rooms[i].facet_from[1])
             edges.append((abs(dx) + abs(dy), i, j))
 
+    print('> Generating path mask map')
+
     edges.sort()
     nodes = dict()
 
@@ -142,6 +167,9 @@ def generate_tilemap(tilemap, w, h, room_count):
                 path_mask[x][y] = False
         if room.facet_to is not None:
             path_mask[room.x + room.facet_to[0]][room.y + room.facet_to[1]] = True
+
+    print()
+    print('> Connecting rooms')
 
     for edge in edges:
         i = edge[1]
@@ -193,12 +221,18 @@ def generate_tilemap(tilemap, w, h, room_count):
         while passage != point_from:
             passages.append(passage)
             passage = bfs_memo[passage[0]][passage[1]]
-            yield None
+            yield
         passages.append(point_from)
+        yield
+
+    print()
+    print('> Filling the tilemap')
 
     for x in range(w):
         for y in range(h):
             tilemap.set_tile(x, y, 1)
+
+    print('> Applying rooms to the tilemap')
 
     for room in generated_rooms:
         for x in range(max(0, room.x), min(w, room.x + room.w)):
@@ -210,26 +244,14 @@ def generate_tilemap(tilemap, w, h, room_count):
                 else:
                     tilemap.set_tile(x, y, rooms[room.target_room][2][dy][dx] != '0')
 
+    print('> Applying passages to the tilemap')
+
     for passage in passages:
         tilemap.set_tile(passage[0], passage[1], -1)
 
-    # ex = None
-    # for i in range(5):
-    #     room = rooms[random.randrange(len(rooms))]
-    #     sx = i * 16 + 8
-    #     sy = 8
-    #
-    #     if ex is not None:
-    #         for x in range(ex, sx):
-    #                 tilemap.set_tile(x, sy + 2, False)
-    #
-    #     ex = sx + room[0]
-    #     for dx in range(room[0]):
-    #         for dy in range(room[1]):
-    #             x = sx + dx
-    #             y = sy + dy
-    #             if room[2][dy][dx] == '0':
-    #                 tilemap.set_tile(x, y, False)
+    print()
+    print('Dungeon Generation Procedure was done successfully')
+    print()
 
 
 def draw_generate_procedure():
