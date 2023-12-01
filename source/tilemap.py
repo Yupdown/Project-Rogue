@@ -9,7 +9,7 @@ class Tilemap(PObject):
         self._h = h
         self._tilemap = [[0 for _ in range(h)] for _ in range(w)]
         self._image_front = [get_image(front_format % n) if n > 0 else None for n in range(0, 17)]
-        self._image_back = get_image(back_format)
+        self._image_back = [get_image(back_format[0]), get_image(back_format[1])]
         self._tilemap_back = PTileMapObject(w, h, 32 / PIXEL_PER_UNIT)
         self._tilemap_front = PTileMapObject(w * 2 + 1, h * 2 + 1, 16 / PIXEL_PER_UNIT)
         self._tilemap_front.set_position(Vector2(-0.25, -0.25))
@@ -31,6 +31,8 @@ class Tilemap(PObject):
                 self._dirty_queue.append((x + dx, y + dy))
 
     def get_tile(self, x, y):
+        if x not in range(self._w) or y not in range(self._h):
+            return 1
         return self._tilemap[x][y]
 
     def update_tile(self, x, y):
@@ -41,7 +43,10 @@ class Tilemap(PObject):
             for dy in range(0, min(2, self._h - y)):
                 solid[dx][dy] = self._tilemap[x + dx][y + dy] > 0
 
-        self._tilemap_back.set_tile(x, y, self._image_back if solid[0][0] or self._tilemap[x][y] < 0 else None)
+        if solid[0][0]:
+            self._tilemap_back.set_tile(x, y, self._image_back[1])
+        elif self._tilemap[x][y] < 0:
+            self._tilemap_back.set_tile(x, y, self._image_back[0])
 
         if solid[0][0] and not solid[0][1]:
             image_grid[0][1] = 2

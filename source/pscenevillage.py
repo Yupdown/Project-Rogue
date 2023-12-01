@@ -6,6 +6,7 @@ from tilemapgeneration import *
 from tilemap import *
 from portal import *
 from coin import *
+from monster import *
 
 
 class PSceneVillage(PScene):
@@ -40,7 +41,7 @@ class PSceneVillage(PScene):
         character.set_scale(Vector2(-1, 1))
         self.add_element(character)
 
-        self.tilemap = Tilemap(32, 32, 'terr01_%02d.png', 'fill01.png')
+        self.tilemap = Tilemap(32, 32, 'terr01_%02d.png', ['fill01b.png', 'fill01.png'])
         generate_tilemap_village(self.tilemap, 32, 32)
         self.add_element(self.tilemap)
 
@@ -53,9 +54,16 @@ class PSceneVillage(PScene):
         self.portal.set_position(Vector2(16, 9.5))
         self.add_element(self.portal)
 
-        self.coin = Coin(self.tilemap, self.player)
-        self.coin.set_position(Vector2(8, 9.5))
-        self.add_element(self.coin)
+        self.coins = []
+        for x in range(20):
+            coin = Coin(self.tilemap, self.player)
+            coin.set_position(Vector2(x, 9.5))
+            self.add_element(coin)
+            self.coins.append(coin)
+
+        self.monster = MonsterWizard(self.tilemap)
+        self.monster.set_position(Vector2(16, 9.5))
+        self.add_element(self.monster)
 
         camera._position = self.player.get_position()
 
@@ -71,4 +79,8 @@ class PSceneVillage(PScene):
 
         self.player.update(delta_time)
         self.portal.update(delta_time)
-        self.coin.update(delta_time)
+
+        for coin in self.coins:
+            coin.update(delta_time)
+
+        self.monster.update(delta_time)
