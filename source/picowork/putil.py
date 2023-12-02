@@ -37,3 +37,11 @@ class Vector2:
 
 def lerp(a, b, t):
     return a + (b - a) * t
+
+
+def rect_overlap(lhs, rhs):
+    if lhs[2] < rhs[0] or lhs[0] > rhs[2]:
+        return False
+    if lhs[3] < rhs[1] or lhs[1] > rhs[3]:
+        return False
+    return True
