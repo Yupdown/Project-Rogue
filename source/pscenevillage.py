@@ -1,4 +1,4 @@
-from picowork.pscene import *
+from psceneworld import *
 from picowork.pspriteobject import *
 from picowork.pscrollpattern import *
 from picowork.pfixedbackground import *
@@ -9,7 +9,7 @@ from coin import *
 from monster import *
 
 
-class PSceneVillage(PScene):
+class PSceneVillage(PSceneWorld):
     def __init__(self):
         super().__init__()
         background_sky = PFixedBackground('skybox.png')
@@ -47,27 +47,18 @@ class PSceneVillage(PScene):
 
         self.player = Player(self.tilemap)
         self.player.set_position(Vector2(9.5, 9))
-        self.add_element(self.player, 2)
+        self.add_world_object(self.player, 2)
 
         import scenemanagement
-        self.portal = Portal(self.player, scenemanagement.load_scene_dungeon)
+        self.portal = Portal(self.tilemap, self.player, scenemanagement.load_scene_dungeon)
         self.portal.set_position(Vector2(16, 9.5))
-        self.add_element(self.portal)
-
-        self.coins = []
-        for x in range(20):
-            coin = Coin(self.tilemap, self.player)
-            coin.set_position(Vector2(x, 9.5))
-            self.add_element(coin)
-            self.coins.append(coin)
-
-        self.monster = MonsterWizard(self.tilemap)
-        self.monster.set_position(Vector2(16, 9.5))
-        self.add_element(self.monster)
+        self.add_world_object(self.portal)
 
         camera._position = self.player.get_position()
 
     def update(self, delta_time):
+        super().update(delta_time)
+
         new_campos = camera._position + (self.player.get_position() - camera._position) * delta_time * 8
         hsw = camera._size * get_canvas_width() / get_canvas_height()
         new_campos = Vector2(clamp(hsw, new_campos.x, 32 - hsw), new_campos.y)
@@ -76,11 +67,3 @@ class PSceneVillage(PScene):
         camera._position = new_campos
         camera._rotation = magnitude
         camera._size = 4 # + 4 * (t % 1) ** 0.05
-
-        self.player.update(delta_time)
-        self.portal.update(delta_time)
-
-        for coin in self.coins:
-            coin.update(delta_time)
-
-        self.monster.update(delta_time)
