@@ -9,8 +9,8 @@ def _list_files_recursively(directory, action):
             if not file.endswith('.png'):
                 continue
             file_path = os.path.join(root, file)
-            yield 'Load: image - ' + file_path
             action(file_path)  # Replace this with your desired action
+            yield file_path, file
 
 
 def add_image(path):
