@@ -16,6 +16,7 @@ class Tilemap(PObject):
         self.add_element(self._tilemap_back)
         self.add_element(self._tilemap_front)
         self._dirty_queue = []
+        self.metadata = {}
 
     def on_draw(self):
         while self._dirty_queue:

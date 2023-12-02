@@ -1,3 +1,4 @@
+from collections import *
 import random
 import time
 from pico2d import *
@@ -136,9 +137,18 @@ def generate_tilemap(tilemap, w, h, room_count):
                     generated_rooms[j].x -= ndx / sqr_magnitude * mul
                     generated_rooms[j].y -= ndy / sqr_magnitude * mul
 
+    print('> Validating positions of the rooms')
+
+    remove_queue = []
     for room in generated_rooms:
         room.x = floor(room.x)
         room.y = floor(room.y)
+        if room.x not in range(w - room.w) or room.y not in range(h - room.h):
+            print('%s doesn\'t have a valid position! Removed from the list' % room.name)
+            remove_queue.append(room)
+
+    while remove_queue:
+        generated_rooms.remove(remove_queue.pop())
 
     print('> Generating edges for MST')
 
@@ -234,15 +244,29 @@ def generate_tilemap(tilemap, w, h, room_count):
 
     print('> Applying rooms to the tilemap')
 
+    monsters = defaultdict(list)
+    tile_to_room = [[None for _ in range(h)] for _ in range(w)]
     for room in generated_rooms:
         for x in range(max(0, room.x), min(w, room.x + room.w)):
             for y in range(max(0, room.y), min(h, room.y + room.h)):
                 dx = x - room.x
                 dy = y - room.y
+                tile_to_room[x][y] = room
                 if room.target_room < 0:
                     tilemap.set_tile(x, y, 0)
                 else:
-                    tilemap.set_tile(x, y, rooms[room.target_room][2][dy][dx] != '0')
+                    ch = rooms[room.target_room][2][dy][dx]
+                    tilemap.set_tile(x, y, ch == '1')
+                    import monster
+                    if ch == 'A':
+                        monsters[room].append((monster.MonsterSlime, x, y))
+                    elif ch == 'B':
+                        monsters[room].append((monster.MonsterGoblin, x, y))
+                    elif ch == 'C':
+                        monsters[room].append((monster.MonsterWizard, x, y))
+    tilemap.metadata['rooms'] = generated_rooms
+    tilemap.metadata['monsters'] = monsters
+    tilemap.metadata['tile_to_room'] = tile_to_room
 
     print('> Applying passages to the tilemap')
 
