@@ -86,10 +86,11 @@ class AvatarAnimator:
 class AnimationIdle:
     @staticmethod
     def update(character, renderer, delta_time):
+        idle_time = character.time * 4
         renderer.root.set_rotation(0)
-        renderer.joint_hips.set_rotation(0)
-        renderer.joint_shoulder_l.set_rotation(-15)
-        renderer.joint_shoulder_r.set_rotation(15)
+        renderer.joint_hips.set_rotation(pow(cos(idle_time) * 0.5 + 0.5, 0.5) * 2)
+        renderer.joint_shoulder_l.set_rotation(-(15 + sin(idle_time) * 5))
+        renderer.joint_shoulder_r.set_rotation(15 + sin(idle_time) * 5)
 
 
 class AnimationMove:

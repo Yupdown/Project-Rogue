@@ -1,11 +1,13 @@
 from picowork.pspriteobject import *
 from picowork.psprite import *
 from picowork.pinput import *
+from worldobject import *
 
-class Portal(PObject):
+class Portal(WorldObject):
     sprites = None
-    def __init__(self, player, portal_callback):
-        super().__init__()
+
+    def __init__(self, tile_map, player, portal_callback):
+        super().__init__(tile_map)
         if Portal.sprites is None:
             image = get_image('portal_stripes3.png')
             Portal.sprites = [PSprite(image, (i % 2) * 512, (i // 2) * 512, 512, 512) for i in range(4)]
@@ -22,11 +24,10 @@ class Portal(PObject):
 
         self.player = player
         self.portal_callback = portal_callback
-        self.time = 0
         self.near = False
 
     def update(self, delta_time):
-        self.time += delta_time
+        super().update(delta_time)
 
         self.visual.set_rotation(self.time * -360)
         self.indicator.set_position(Vector2(0, sin(self.time * 10) * 0.05 + 1.2))
