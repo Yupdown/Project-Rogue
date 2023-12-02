@@ -20,4 +20,6 @@ class PSprite:
         self.composite_draw(rad, '', x, y, w, h)
 
     def composite_draw(self, rad, flip, x, y, w = None, h = None):
+        if w is None and h is None:
+            w, h = self.w, self.h
         self._image.clip_composite_draw(self.x, self.y, self.w, self.h, rad, flip, x, y, w, h)
