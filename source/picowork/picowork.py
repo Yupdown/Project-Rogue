@@ -14,11 +14,23 @@ def initialize(w, h):
     font = load_font('DungGeunMo.ttf', 16)
     splash_image = load_image("resource/splash.png")
 
-    for str_log, image_file in presource.load_images():
+    for path, file in presource.load_images():
         clear_canvas()
         splash_image.draw(w / 2, h / 2)
-        font.draw(2, 10, 'Load: image - ' + str_log, (0, 0, 0))
-        presource.get_image(image_file).draw(get_canvas_width() - 30, 30, 50, 50)
+        font.draw(2, 10, 'Load: image - ' + path, (0, 0, 0))
+        presource.get_image(file).draw(get_canvas_width() - 30, 30, 50, 50)
+        update_canvas()
+
+    for path, file in presource.load_musics():
+        clear_canvas()
+        splash_image.draw(w / 2, h / 2)
+        font.draw(2, 10, 'Load: music - ' + path, (0, 0, 0))
+        update_canvas()
+
+    for path, file in presource.load_sounds():
+        clear_canvas()
+        splash_image.draw(w / 2, h / 2)
+        font.draw(2, 10, 'Load: sound - ' + path, (0, 0, 0))
         update_canvas()
 
 
