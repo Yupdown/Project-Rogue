@@ -15,6 +15,9 @@ class PSceneDungeon(PSceneWorld):
 
         self.rooms_visited = set()
 
+        self.camera_size = 4
+        self.camera_shake = 0
+
         background_sky = PFixedBackground('skybox.png')
         self.add_element(background_sky)
 
@@ -63,7 +66,11 @@ class PSceneDungeon(PSceneWorld):
         v = self.player.get_position()
         r = self.tilemap.metadata['tile_to_room'][floor(v.x)][floor(v.y)]
 
-        if r not in self.rooms_visited:
+        if r is not None and r not in self.rooms_visited:
+            if r.name == 'BOSS ROOM':
+                bgm = get_music('music03.mp3')
+                bgm.set_volume(50)
+                bgm.repeat_play()
             for monster_type, x, y in self.tilemap.metadata['monsters'][r]:
                 monster = monster_type(self.tilemap)
                 monster.set_position(Vector2(x + 0.5, y))
@@ -74,14 +81,20 @@ class PSceneDungeon(PSceneWorld):
                     self.add_world_object(dust_object, 1)
             self.rooms_visited.add(r)
 
+        self.camera_size = lerp(self.camera_size, 4 if r else 2.5, delta_time * 4)
+        self.camera_shake = lerp(self.camera_shake, 0, delta_time * 3)
+
         camera._position = new_campos
         camera._rotation = magnitude
-        camera._size = lerp(camera._size, 4 if r else 2.5, delta_time * 4)
+        camera._size = self.camera_size - self.camera_shake * 0.1
 
         self.interface.update(delta_time)
 
     def on_generate_dungeon(self):
         pass
+
+    def shake_camera(self, value = 1):
+        self.camera_shake = value
 
 
 class InterfaceDungeon(PObject):
@@ -106,7 +119,10 @@ class InterfaceDungeon(PObject):
         self.ui_coin_icon.set_position(Vector2(-62.5, 0))
         self.ui_coin_icon.set_scale(Vector2(0.75, 0.75))
         self.ui_coin_panel.add_element(self.ui_coin_icon)
+        self.last_coin = player.coins
         self.time = 0
+
+        self.floating_coins = []
 
         self.ui_player_life = InterfacePlayerLife(player)
         self.ui_player_life.set_position(Vector2(0, get_canvas_height() - 4))
@@ -114,8 +130,31 @@ class InterfaceDungeon(PObject):
 
     def update(self, delta_time):
         self.time += delta_time
-        self.ui_coin_text.set_text('%04d' % self.ref_player.coins)
-        self.ui_coin_icon.set_image(InterfaceDungeon.coin_sprites[floor(self.time * 10 % 6)])
+        current_coin = self.ref_player.coins
+        current_coin_image = InterfaceDungeon.coin_sprites[floor(self.time * 10 % 6)]
+        for _ in range(current_coin - self.last_coin):
+            floating_coin = (self.time, PSpriteUIObject(InterfaceDungeon.coin_sprites[0]))
+            floating_coin[1].set_position(Vector2(get_canvas_width() / 2, get_canvas_height() / 2))
+            floating_coin[1].set_scale(Vector2(0.25, 0.25))
+            self.add_element(floating_coin[1])
+            self.floating_coins.append(floating_coin)
+        self.last_coin = current_coin
+        self.ui_coin_text.set_text('%04d' % current_coin)
+        self.ui_coin_icon.set_image(current_coin_image)
+
+        for floating_coin in self.floating_coins:
+            floating_coin[1].set_position(lerp(
+                    floating_coin[1].get_position(),
+                    self.ui_coin_panel.get_position() + self.ui_coin_icon.get_position(),
+                    delta_time * 8))
+            floating_coin[1].set_scale(lerp(
+                    floating_coin[1].get_scale(),
+                    self.ui_coin_icon.get_scale(),
+                    delta_time * 8))
+            floating_coin[1].set_image(current_coin_image)
+            if self.time - floating_coin[0] >= 1:
+                self.remove_element(floating_coin[1])
+                self.floating_coins.remove(floating_coin)
 
 
 class InterfacePlayerLife(PObject):

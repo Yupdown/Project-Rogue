@@ -37,5 +37,8 @@ class Portal(WorldObject):
             self.indicator.set_scale(Vector2(1, 2))
         self.indicator.set_scale(lerp(self.indicator.get_scale(), Vector2(1, 1) if near else Vector2(1, 0), delta_time * 24))
         if near and get_keydown(SDLK_w):
+            sound = get_sound('Psychic_Soothe_Pulser_01a.wav')
+            sound.set_volume(50)
+            sound.play()
             self.portal_callback()
         self.near = near

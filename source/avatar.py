@@ -91,6 +91,8 @@ class AnimationIdle:
         renderer.joint_hips.set_rotation(pow(cos(idle_time) * 0.5 + 0.5, 0.5) * 2)
         renderer.joint_shoulder_l.set_rotation(-(15 + sin(idle_time) * 5))
         renderer.joint_shoulder_r.set_rotation(15 + sin(idle_time) * 5)
+        renderer.joint_hip_l.set_rotation(0)
+        renderer.joint_hip_r.set_rotation(0)
 
 
 class AnimationMove:
@@ -120,7 +122,7 @@ class AnimationJumpRoll:
     @staticmethod
     def update(character, renderer, delta_time):
         renderer.root.set_rotation(0)
-        renderer.joint_hips.set_rotation(renderer.joint_hips.get_rotation() - 2000 * delta_time)
+        renderer.joint_hips.set_rotation(renderer.joint_hips.get_rotation() + 2000 * delta_time)
 
 
 class AnimationClimb:
@@ -135,3 +137,38 @@ class AnimationClimb:
             renderer.root.set_rotation(30)
         renderer.joint_shoulder_l.set_rotation(-30)
         renderer.joint_shoulder_r.set_rotation(90)
+
+
+class AnimationAttackDown:
+    @staticmethod
+    def update(character, renderer, delta_time):
+        factor = 1 - (1 - character.attack_factor) ** 10
+        factor_shake = sin(character.time * 80)
+        renderer.root.set_rotation(0)
+        renderer.joint_shoulder_l.set_rotation(180 + 180 * factor + factor_shake * 4)
+        renderer.joint_shoulder_r.set_rotation(90 * factor + factor_shake * 10)
+        renderer.joint_hip_l.set_rotation(-45 * factor)
+        renderer.joint_hip_r.set_rotation(60 * factor)
+        renderer.joint_hips.set_rotation(45 - (1 - factor) * 60)
+
+
+class AnimationAttackUp:
+    @staticmethod
+    def update(character, renderer, delta_time):
+        factor = 1 - (1 - character.attack_factor) ** 10
+        factor_shake = sin(character.time * 80)
+        renderer.root.set_rotation(0)
+        renderer.joint_shoulder_l.set_rotation(-factor * 180 + factor_shake * 4)
+        renderer.joint_shoulder_r.set_rotation(90 * factor + factor_shake * 10)
+        renderer.joint_hip_l.set_rotation(45 * factor)
+        renderer.joint_hip_r.set_rotation(-60 * factor + 30)
+        renderer.joint_hips.set_rotation(45 - factor * 90)
+
+
+class AnimationDamaged:
+    @staticmethod
+    def update(character, renderer, delta_time):
+        renderer.root.set_rotation(0)
+        renderer.joint_hips.set_rotation(lerp( renderer.joint_hips.get_rotation(), -30, delta_time * 32))
+        renderer.joint_shoulder_l.set_rotation(lerp(renderer.joint_shoulder_l.get_rotation(), -90, delta_time * 32))
+        renderer.joint_shoulder_r.set_rotation(lerp(renderer.joint_shoulder_r.get_rotation(), -90, delta_time * 32))

@@ -4,6 +4,7 @@ import time
 from pico2d import *
 from math import *
 from picowork.putil import *
+from picowork.presource import *
 
 
 class Room:
@@ -56,12 +57,12 @@ def generate_tilemap(tilemap, w, h, room_count):
     begin_room = Room(10, dungeon_height // 2 - 6, 16, 12)
     begin_room.name = 'START ROOM'
     begin_room.fixed = True
-    begin_room.facet_from = (begin_room.w, 1)
+    begin_room.facet_from = (begin_room.w - 1, 1)
 
     end_room = Room(dungeon_width - 24 - 10, dungeon_height // 2 - 8, 24, 16)
     end_room.name = 'BOSS ROOM'
     end_room.fixed = True
-    end_room.facet_to = (-1, 1)
+    end_room.facet_to = (0, 1)
 
     for i in range(room_count):
         target = random.randrange(0, len(rooms))
@@ -71,11 +72,18 @@ def generate_tilemap(tilemap, w, h, room_count):
              rooms[target][0],
              rooms[target][1]
         )
+
+        for x in range(room.w):
+            for y in range(room.h):
+                ch = rooms[target][2][y][x]
+                if ch == 'T':
+                    room.facet_to = (x, y)
+                if ch == 'F':
+                    room.facet_from = (x, y)
+
         room.x = random.randrange(0, dungeon_width - room.w)
         room.y = random.randrange(0, dungeon_height - room.h)
         room.name = 'ROOM %02d' % i
-        room.facet_to = (-1, 2)
-        room.facet_from = (room.w, 2)
         room.target_room = target
         generated_rooms.append(room)
 
@@ -97,6 +105,8 @@ def generate_tilemap(tilemap, w, h, room_count):
         last_time = t
 
         for i in range(len(generated_rooms)):
+            generated_rooms[i].x = clamp(1, generated_rooms[i].x, w - 1 - generated_rooms[i].w)
+            generated_rooms[i].y = clamp(1, generated_rooms[i].y, h - 1 - generated_rooms[i].h)
 
             x = generated_rooms[i].x + generated_rooms[i].w / 2
             y = generated_rooms[i].y + generated_rooms[i].h / 2
@@ -172,11 +182,19 @@ def generate_tilemap(tilemap, w, h, room_count):
 
     path_mask = [[True for _ in range(h)] for _ in range(w)]
     for room in generated_rooms:
-        for x in range(max(0, room.x - 1), min(w, room.x + room.w + 1)):
-            for y in range(max(0, room.y - 1), min(h, room.y + room.h + 1)):
+        for x in range(max(0, room.x - 3), min(w, room.x + room.w + 3)):
+            for y in range(max(0, room.y - 3), min(h, room.y + room.h + 3)):
                 path_mask[x][y] = False
-        if room.facet_to is not None:
-            path_mask[room.x + room.facet_to[0]][room.y + room.facet_to[1]] = True
+                if x <= room.x:
+                    if room.facet_to and room.facet_to[0] == 0:
+                        path_mask[x][y] = y == room.y + room.facet_to[1]
+                    if room.facet_from and room.facet_from[0] == 0:
+                        path_mask[x][y] = y == room.y + room.facet_from[1]
+                if x + 1 >= room.x + room.w:
+                    if room.facet_to and room.facet_to[0] == room.w - 1:
+                        path_mask[x][y] = y == room.y + room.facet_to[1]
+                    if room.facet_from and room.facet_from[0] == room.w - 1:
+                        path_mask[x][y] = y == room.y + room.facet_from[1]
 
     print()
     print('> Connecting rooms')

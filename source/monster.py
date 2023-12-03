@@ -2,6 +2,8 @@ import random
 from picowork.pspriteuiobject import *
 from worldobject import *
 from avatar import *
+from damageeffect import *
+from coin import *
 
 
 class Monster(WorldObject):
@@ -20,9 +22,31 @@ class Monster(WorldObject):
 
     def update(self, delta_time):
         super().update(delta_time)
-        self.behaviour.update(self, self.ref_tile_map)
+        self.behaviour.update(self, self.ref_tile_map, delta_time)
         self.update_physics(delta_time)
         self.run_factor += delta_time * self.velocity.x * 10
+
+    def apply_damage(self, value, sender):
+        self.life -= value
+        self.velocity += Vector2(sender.direction * 8, 0)
+        self.behaviour.damage()
+        self.behaviour.direction = -sender.direction
+
+        damage_effect = DamageEffect(self.ref_tile_map)
+        damage_effect.set_position(self.get_position())
+        self.get_parent().add_world_object(damage_effect)
+
+        if self.life <= 0:
+            self.kill()
+
+    def kill(self):
+        for _ in range(5):
+            coin = Coin(self.ref_tile_map)
+            coin.velocity = Vector2(random.random() * 2 - 1, random.random()) * 10
+            coin.set_position(self.get_position())
+            self.get_parent().add_world_object(coin)
+
+        self.get_parent().remove_world_object(self)
 
 
 class MonsterSlime(Monster):
@@ -76,6 +100,10 @@ class MonsterGoblin(Monster):
     def update(self, delta_time):
         super().update(delta_time)
         self.renderer.root.set_scale(Vector2(-self.behaviour.direction, self.renderer.root.get_scale().y))
+        if self.behaviour.damage_time > 0:
+            self.animator.set_state(AnimationDamaged)
+        else:
+            self.animator.set_state(AnimationMove)
         self.animator.update(self, delta_time)
 
 
@@ -94,14 +122,20 @@ class MonsterWizard(Monster):
     def update(self, delta_time):
         super().update(delta_time)
         self.renderer.root.set_scale(Vector2(-self.behaviour.direction, self.renderer.root.get_scale().y))
+        if self.behaviour.damage_time > 0:
+            self.animator.set_state(AnimationDamaged)
+        else:
+            self.animator.set_state(AnimationMove)
         self.animator.update(self, delta_time)
 
 
 class MonsterBehaviour:
     def __init__(self):
         self.direction = 1
+        self.damage_time = 0
 
-    def update(self, owner: WorldObject, tilemap):
+    def update(self, owner: WorldObject, tilemap, delta_time):
+        self.damage_time -= delta_time
         if owner.collision & 2:
             owner_pos = owner.get_position()
             check_wall_pos = owner_pos + Vector2(0.25 * self.direction, 0)
@@ -113,7 +147,13 @@ class MonsterBehaviour:
             if tile1 > 0 or not tile2 > 0:
                 self.direction = -self.direction
 
-        owner.force = Vector2(self.direction * 80, owner.force.y)
+        if self.damage_time <= 0:
+            owner.force = Vector2(self.direction * 80, owner.force.y)
+        else:
+            owner.force = Vector2(0, owner.force.y)
+
+    def damage(self):
+        self.damage_time = 0.3
 
 
 class InterfaceMonsterLife(PObject):

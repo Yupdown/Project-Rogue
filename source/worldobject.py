@@ -34,11 +34,10 @@ class WorldObject(PObject):
         WorldObject.font.draw(v.x + r + 4, v.y + 6, self.collision_tag, (255, 0, 0))
 
     def update_physics(self, delta_time):
-        self.velocity += self.force * delta_time
         vm = self.velocity_max
-        self.velocity = Vector2(
-            clamp(-vm.x, self.velocity.x, vm.x),
-            clamp(-vm.y, self.velocity.y, vm.y))
+        self.velocity += Vector2(
+            clamp(min(-self.velocity.x - vm.x, 0), self.force.x * delta_time, max(vm.x - self.velocity.x, 0)),
+            clamp(min(-self.velocity.y - vm.y, 0), self.force.y * delta_time, max(vm.y - self.velocity.y, 0)))
 
         f = self.friction if self.collision & 2 else self.friction * 0.5
         if self.velocity.x > 0:

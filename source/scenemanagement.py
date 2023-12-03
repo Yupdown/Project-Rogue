@@ -5,16 +5,26 @@ from picowork import picowork
 loading_image = None
 loading_font = None
 
+
 def load_scene_village():
     draw_loading_image()
     update_canvas()
     picowork.change_scene(PSceneVillage())
+
+    bgm = get_music('music01.mp3')
+    bgm.set_volume(50)
+    bgm.repeat_play()
 
 
 def load_scene_dungeon():
     scene = PSceneDungeon()
     loading_images = [PSprite(get_image('uiloading.png'), i % 4 * 18, i // 4 * 18, 18, 18) for i in range(8)]
     cnt = 0
+
+    bgm = get_music('music02.mp3')
+    bgm.set_volume(50)
+    bgm.repeat_play()
+
     for _ in scene.generate_dungeon():
         clear_canvas()
         draw_loading_image()

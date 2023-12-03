@@ -39,4 +39,7 @@ class PSceneWorld(PScene):
     def get_collision_objects_from_object(self, group, world_object):
         v = world_object.get_position()
         r = world_object.collision_bounds
-        self.get_collision_objects(group, (v.x + r[0], v.y + r[1], v.x + r[2], v.y + r[3]))
+        return self.get_collision_objects(group, (v.x + r[0], v.y + r[1], v.x + r[2], v.y + r[3]))
+
+    def shake_camera(self, value = 1):
+        pass

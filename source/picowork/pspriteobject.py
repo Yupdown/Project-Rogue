@@ -2,6 +2,7 @@ from .pobject import *
 from .pcamera import *
 from .presource import *
 
+
 class PSpriteObject(PObject):
     def __init__(self, image):
         super().__init__()
