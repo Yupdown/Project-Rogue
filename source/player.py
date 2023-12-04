@@ -8,9 +8,9 @@ from slasheffect import *
 class Player(WorldObject):
     def __init__(self, tile_map):
         super().__init__(tile_map)
-        self.renderer = Avatar(get_image('avatar_body0005.png')) # werewolf01.png
+        self.renderer = Avatar(get_image('werewolf01.png')) #
         self.add_element(self.renderer)
-        self.life = 6
+        self.life = 10
         self.coins = 0
         self.wall_jump = 0
         self.coyote_jump = 0
@@ -46,6 +46,10 @@ class Player(WorldObject):
         if get_keydown(SDLK_LSHIFT) and self.evasion_time <= 0 and self.collision & 2:
             self.velocity = Vector2(self.direction * 12, self.velocity.y)
             self.evasion_time = 0.5
+
+            sfx = get_sound('jump2.wav')
+            sfx.set_volume(100)
+            sfx.play()
 
         if get_button(SDL_BUTTON_LEFT) and self.attack_time <= 0 and not self.wall_jump > 0 and not self.climb:
             slash_effect = SlashEffect(self.ref_tile_map)
@@ -86,12 +90,12 @@ class Player(WorldObject):
 
         if self.damage_cool <= 0 and self.evasion_time <= 0:
             monsters = self.get_parent().get_collision_objects_from_object('monster', self)
-            if monsters:
-                self.get_parent().shake_camera(3)
-                self.velocity = Vector2(8 * -self.direction, self.velocity.y)
-                self.life -= 1
-                self.damage_cool = 1
-                get_sound('bonk.wav').play()
+            projectiles = self.get_parent().get_collision_objects_from_object('projectile', self)
+            if projectiles:
+                self.damage()
+                self.get_parent().remove_world_object(projectiles[0])
+            elif monsters:
+                self.damage()
 
         if self.attack_time <= -0.5:
             self.attack_type = 0
@@ -127,6 +131,18 @@ class Player(WorldObject):
 
         self.renderer.root.set_scale(Vector2(-self.direction, 1.0))
         self.animator.update(self, delta_time)
+
+    def damage(self):
+        if self.damage_cool > 0 or self.evasion_time > 0:
+            return
+        self.get_parent().shake_camera(3)
+        self.velocity = Vector2(8 * -self.direction, self.velocity.y)
+        self.life -= 1
+        self.damage_cool = 1
+        get_sound('bonk.wav').play()
+        if self.life <= 0:
+            self.get_parent().notify_player_kill()
+            self.get_parent().remove_world_object(self)
 
     def emit_trail_dust(self):
         dust_object = TrailDust(self.ref_tile_map, self.velocity * 0.25)
@@ -170,6 +186,7 @@ class Player(WorldObject):
 
         if get_keydown(SDLK_SPACE):
             if self.coyote_jump > 0:
+                self.coyote_jump = 0
                 if self.climb > 0:
                     self.force = Vector2(100 if self.climb == 1 else -100, self.force.y)
                     self.velocity = Vector2(5 if self.climb == 1 else -5, 10)

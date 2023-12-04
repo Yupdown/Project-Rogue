@@ -7,6 +7,7 @@ from picowork.ptextuiobject import *
 from tilemapgeneration import *
 from tilemap import *
 from portal import *
+import globalvariables
 
 
 class PSceneDungeon(PSceneWorld):
@@ -14,6 +15,7 @@ class PSceneDungeon(PSceneWorld):
         super().__init__()
 
         self.rooms_visited = set()
+        self.game_over = False
 
         self.camera_size = 4
         self.camera_shake = 0
@@ -22,26 +24,28 @@ class PSceneDungeon(PSceneWorld):
         self.add_element(background_sky)
 
         background = PScrollPattern('bg01_far.png', 20)
-        background.set_position(Vector2(0, 20))
+        background.set_position(Vector2(0, 40))
         self.add_element(background)
 
-        background_near0 = PScrollPattern('bg01_mid.png', 18)
-        background_near0.set_position(Vector2(0, 12))
+        background_near0 = PScrollPattern('bg01_mid.png', 15)
+        background_near0.set_position(Vector2(0, 30))
         self.add_element(background_near0)
 
-        background_near1 = PScrollPattern('bg01_mid.png', 13)
-        background_near1.set_position(Vector2(0, 11))
+        background_near1 = PScrollPattern('bg01_mid.png', 12)
+        background_near1.set_position(Vector2(0, 24))
         self.add_element(background_near1)
 
         background_near2 = PScrollPattern('bg01_mid.png', 10)
-        background_near2.set_position(Vector2(0, 10))
+        background_near2.set_position(Vector2(0, 20))
         self.add_element(background_near2)
 
         self.tilemap = Tilemap(160, 100, 'terr02_%02d.png', ['fill03.png', 'fill02.png'])
         self.add_element(self.tilemap)
 
+        portal_position = Vector2(18, 50)
+
         self.player = Player(self.tilemap)
-        self.player.set_position(Vector2(18.5, 45))
+        self.player.set_position(portal_position)
         self.add_world_object(self.player, 2)
 
         self.remain_monsters = 0
@@ -49,19 +53,29 @@ class PSceneDungeon(PSceneWorld):
 
         import scenemanagement
         self.portal = Portal(self.tilemap, self.player, scenemanagement.load_scene_village)
-        self.portal.set_position(Vector2(18.5, 45))
+        self.portal.set_position(portal_position)
         self.add_world_object(self.portal)
 
         camera._position = self.player.get_position()
 
         self.interface = InterfaceDungeon(self.player)
-        self.add_element(self.interface)
+        self.interface_gameover = InterfaceGameOver()
+        self.add_element(self.interface, 5)
 
     def generate_dungeon(self):
         return generate_tilemap(self.tilemap, self.tilemap._w, self.tilemap._h, 13)
 
     def update(self, delta_time):
         super().update(delta_time)
+
+        if get_keydown(SDLK_F12):
+            globalvariables.DEBUG_MODE = not globalvariables.DEBUG_MODE
+        if get_keydown(SDLK_END):
+            import scenemanagement
+            scenemanagement.load_scene_dungeon()
+        if self.game_over and get_keydown(SDLK_SPACE):
+            import scenemanagement
+            scenemanagement.load_scene_village()
 
         new_campos = camera._position + (self.player.get_position() - camera._position) * delta_time * 8
         magnitude = clamp(-0.5, (new_campos - camera._position).x * 50, 0.5)
@@ -74,7 +88,7 @@ class PSceneDungeon(PSceneWorld):
             self.rooms_visited.add(r)
 
         if self.current_room is not None:
-            if self.remain_monsters <= 0:
+            if globalvariables.DEBUG_MODE or self.remain_monsters <= 0:
                 self.on_clear_new_room(self.current_room)
 
         self.camera_size = lerp(self.camera_size, 4 if r else 2.5, delta_time * 4)
@@ -85,12 +99,21 @@ class PSceneDungeon(PSceneWorld):
         camera._size = self.camera_size - self.camera_shake * 0.1
 
         self.interface.update(delta_time)
+        if self.game_over:
+            self.interface_gameover.update(delta_time)
 
     def on_generate_dungeon(self):
         pass
 
     def notify_monster_kill(self):
         self.remain_monsters -= 1
+
+    def notify_player_kill(self):
+        get_sound('UIImpact3.wav').play()
+        self.shake_camera(3)
+        self.game_over = True
+        self.remove_element(self.interface)
+        self.add_element(self.interface_gameover, 5)
 
     def shake_camera(self, value = 1):
         self.camera_shake = value
@@ -105,7 +128,7 @@ class PSceneDungeon(PSceneWorld):
             bgm.set_volume(50)
             bgm.repeat_play()
         for monster_type, x, y in self.tilemap.metadata['monsters'][room]:
-            monster = monster_type(self.tilemap)
+            monster = monster_type(self.player, self.tilemap)
             monster.set_position(Vector2(x + 0.5, y))
             self.add_world_object(monster)
             for _ in range(8):
@@ -127,8 +150,10 @@ class PSceneDungeon(PSceneWorld):
             self.tilemap.set_tile(facet[0], facet[1], -1, False)
         get_sound('DraftOff.wav').play()
 
+
 class InterfaceDungeon(PObject):
     coin_sprites = None
+    vignette_sprite = None
 
     def __init__(self, player):
         super().__init__()
@@ -145,6 +170,9 @@ class InterfaceDungeon(PObject):
         if InterfaceDungeon.coin_sprites is None:
             image = get_image('gold_l.png')
             InterfaceDungeon.coin_sprites = [PSprite(image, i * 9, 0, 9, 14) for i in range(6)]
+        if InterfaceDungeon.vignette_sprite is None:
+            InterfaceDungeon.vignette_sprite = get_image('damage_vignette.png')
+
         self.ui_coin_icon = PSpriteUIObject(InterfaceDungeon.coin_sprites[0])
         self.ui_coin_icon.set_position(Vector2(-62.5, 0))
         self.ui_coin_icon.set_scale(Vector2(0.75, 0.75))
@@ -186,6 +214,36 @@ class InterfaceDungeon(PObject):
                 self.remove_element(floating_coin[1])
                 self.floating_coins.remove(floating_coin)
 
+    def on_draw(self):
+        InterfaceDungeon.vignette_sprite.opacify(max(0, self.ref_player.damage_cool ** 15))
+        InterfaceDungeon.vignette_sprite.draw_to_origin(0, 0, get_canvas_width(), get_canvas_height())
+
+
+class InterfaceGameOver(PObject):
+    panel_sprite = None
+    def __init__(self):
+        super().__init__()
+        if InterfaceGameOver.panel_sprite is None:
+            InterfaceGameOver.panel_sprite = get_image('splash_solid.png')
+        self.time = 0
+        self.ui_gameover_text = PSpriteUIObject('txt_death.png')
+        self.ui_gameover_text.set_position(Vector2(get_canvas_width() / 2, get_canvas_height() / 2))
+        self.add_element(self.ui_gameover_text)
+
+        self.ui_coin_text = PTextUIObject('PRESS SPACE TO RESTART')
+        self.ui_coin_text.set_position(Vector2(get_canvas_width() / 2 - 180, 60))
+        self.add_element(self.ui_coin_text)
+
+    def update(self, delta_time):
+        self.time += delta_time
+        factor = 1 - (clamp(0, self.time * 1.5, 1) - 1) ** 2
+        self.ui_gameover_text.set_scale(Vector2(1, 1) * (sin(self.time * 4) * 0.1 + 2 * factor))
+        self.ui_gameover_text.set_rotation(cos(self.time * 4) * 5)
+
+    def on_draw(self):
+        InterfaceGameOver.panel_sprite.opacify(min(0.4, self.time))
+        InterfaceGameOver.panel_sprite.draw_to_origin(0, 0, get_canvas_width(), get_canvas_height())
+        InterfaceGameOver.panel_sprite.opacify(1)
 
 class InterfacePlayerLife(PObject):
     def __init__(self, player):
@@ -199,7 +257,8 @@ class InterfacePlayerLife(PObject):
         w = self.sprite_back.w * self._concatenated_scale.x * UI_SCALE_MULTIPLY
         h = self.sprite_back.h * self._concatenated_scale.y * UI_SCALE_MULTIPLY
         value = self.ref_player.life
-        for index in range(3):
+        for index in range(5):
             factor = clamp(0, (value - index * 2) * 0.5, 1)
+            factor = ceil(self.sprite_fill.w * factor) / self.sprite_fill.w
             self.sprite_back.draw_to_origin(v.x + index * 75, v.y - h, w, h)
-            self.sprite_fill.clip_draw_to_origin(0, 0, floor(self.sprite_fill.w * factor), self.sprite_fill.h, v.x + index * 75, v.y - h, w * factor, h)
+            self.sprite_fill.clip_draw_to_origin(0, 0, ceil(self.sprite_fill.w * factor), self.sprite_fill.h, v.x + index * 75, v.y - h, w * factor, h)

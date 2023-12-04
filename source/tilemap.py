@@ -96,8 +96,8 @@ class Tilemap(PObject):
                 self._tilemap_front.set_tile(x * 2 + dx + 1, y * 2 + dy + 1, self._image_front[image_grid[dx][dy]])
 
     def apply_velocity(self, obj: Player, pre_pos: Vector2, post_pos: Vector2):
-        w = 0.2
-        h = 0.4
+        w = 0.25
+        h = 0.5
 
         pre_vel = obj.velocity
         post_vel = pre_vel

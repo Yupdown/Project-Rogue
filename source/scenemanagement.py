@@ -5,15 +5,15 @@ from picowork import picowork
 loading_image = None
 loading_font = None
 
-
 def load_scene_village():
     draw_loading_image()
     update_canvas()
     picowork.change_scene(PSceneVillage())
 
-    bgm = get_music('music01.mp3')
-    bgm.set_volume(50)
-    bgm.repeat_play()
+    global global_bgm
+    global_bgm = get_music('music01.mp3')
+    global_bgm.set_volume(50)
+    global_bgm.repeat_play()
 
 
 def load_scene_dungeon():
@@ -21,9 +21,9 @@ def load_scene_dungeon():
     loading_images = [PSprite(get_image('uiloading.png'), i % 4 * 18, i // 4 * 18, 18, 18) for i in range(8)]
     cnt = 0
 
-    bgm = get_music('music02.mp3')
-    bgm.set_volume(50)
-    bgm.repeat_play()
+    global global_bgm
+    if global_bgm:
+        global_bgm.stop()
 
     for _ in scene.generate_dungeon():
         clear_canvas()
@@ -34,6 +34,10 @@ def load_scene_dungeon():
         update_canvas()
     scene.on_generate_dungeon()
     picowork.change_scene(scene)
+
+    global_bgm = get_music('music02.mp3')
+    global_bgm.set_volume(50)
+    global_bgm.repeat_play()
 
 
 def draw_loading_image():

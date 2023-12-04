@@ -1,7 +1,7 @@
 from picowork.pspriteobject import *
 from picowork.psprite import *
 from picowork.pinput import *
-
+import globalvariables
 
 class WorldObject(PObject):
     font = None
@@ -23,9 +23,14 @@ class WorldObject(PObject):
     def on_draw(self):
         if WorldObject.font is None:
             WorldObject.font = load_font('DungGeunMo.ttf', 16)
-        if True or self.collision_bounds is None:
+        if not globalvariables.DEBUG_MODE:
             return
         v = camera.world_to_screen(self._concatenated_position)
+        WorldObject.font.draw(v.x, v.y, 'x = %f' % self.get_position().x, (255, 255, 255))
+        WorldObject.font.draw(v.x, v.y - 12, 'y = %f' % self.get_position().y, (255, 255, 255))
+        WorldObject.font.draw(v.x, v.y - 24, 'collision = %d' % self.collision, (255, 255, 255))
+        if self.collision_bounds is None:
+            return
         l = camera.screen_size(self.collision_bounds[0] * self._concatenated_scale.x)
         b = camera.screen_size(self.collision_bounds[1] * self._concatenated_scale.y)
         r = camera.screen_size(self.collision_bounds[2] * self._concatenated_scale.x)

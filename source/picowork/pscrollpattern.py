@@ -34,5 +34,5 @@ class PScrollPattern(PSpriteObject):
                 self._image.rotate_draw(rad, floor(v.x), floor(v.y), ceil(s.x), ceil(s.y))
                 self._image.clip_composite_draw(0, 0, self._image.w, 1, rad, '', floor(vp.x), floor(vp.y), ceil(sp.x), ceil(sp.y))
             else:
-                self._image.draw(floor(v.x), floor(v.y), ceil(s.x), s.y)
+                self._image.draw(floor(v.x), floor(v.y), ceil(s.x), ceil(s.y))
                 self._image.clip_draw(0, 0, self._image.w, 1, floor(vp.x), floor(vp.y), ceil(sp.x), ceil(sp.y))
