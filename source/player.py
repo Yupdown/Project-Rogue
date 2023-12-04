@@ -8,7 +8,7 @@ from slasheffect import *
 class Player(WorldObject):
     def __init__(self, tile_map):
         super().__init__(tile_map)
-        self.renderer = Avatar(get_image('werewolf01.png')) # avatar_body0005.png
+        self.renderer = Avatar(get_image('avatar_body0005.png')) # werewolf01.png
         self.add_element(self.renderer)
         self.life = 6
         self.coins = 0
@@ -60,13 +60,14 @@ class Player(WorldObject):
             sfx.play()
 
             v = self.get_position()
-            offset_x = self.direction * 0.4
-            rect = (v.x + offset_x - 0.4, v.y, v.x + offset_x + 0.4, v.y + 0.4)
+            offset_x = self.direction * 0.5
+            rect = (v.x + offset_x - 0.5, v.y, v.x + offset_x + 0.5, v.y + 0.5)
 
             hit_monsters = self.get_parent().get_collision_objects('monster', rect)
             if hit_monsters:
                 self.get_parent().shake_camera()
-                get_sound('bonk.wav').play()
+                sfx = get_sound(['Bullet_Ground_1c.wav', 'Bullet_Ground_1d.wav'][self.attack_type])
+                sfx.play()
             for hit_monster in hit_monsters:
                 hit_monster.apply_damage(10, self)
 

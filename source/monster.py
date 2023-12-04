@@ -45,7 +45,7 @@ class Monster(WorldObject):
             coin.velocity = Vector2(random.random() * 2 - 1, random.random()) * 10
             coin.set_position(self.get_position())
             self.get_parent().add_world_object(coin)
-
+        self.get_parent().notify_monster_kill()
         self.get_parent().remove_world_object(self)
 
 

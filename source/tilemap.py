@@ -25,11 +25,14 @@ class Tilemap(PObject):
             self._dirty_queue.pop(0)
             self.update_tile(x, y)
 
-    def set_tile(self, x, y, tile):
+    def set_tile(self, x, y, tile, initial = True):
         self._tilemap[x][y] = tile
-        for dx in range(0, min(2, self._w - x)):
-            for dy in range(0, min(2, self._h - y)):
-                self._dirty_queue.append((x + dx, y + dy))
+        if initial:
+            self._dirty_queue.append((x, y))
+        else:
+            for dx in range(max(-1, -x), 1):
+                for dy in range(max(-1, -y), 1):
+                    self._dirty_queue.append((x + dx, y + dy))
 
     def get_tile(self, x, y):
         if x not in range(self._w) or y not in range(self._h):

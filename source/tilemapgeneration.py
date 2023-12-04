@@ -19,6 +19,14 @@ class Room:
         self.fixed = False
         self.target_room = -1
 
+    def get_facet_positions(self):
+        result = []
+        if self.facet_to is not None:
+            result.append((self.x + self.facet_to[0], self.y + self.facet_to[1]))
+        if self.facet_from is not None:
+            result.append((self.x + self.facet_from[0], self.y + self.facet_from[1]))
+        return result
+
 
 rooms = []
 font = None
@@ -282,6 +290,8 @@ def generate_tilemap(tilemap, w, h, room_count):
                         monsters[room].append((monster.MonsterGoblin, x, y))
                     elif ch == 'C':
                         monsters[room].append((monster.MonsterWizard, x, y))
+        for facet in room.get_facet_positions():
+            tile_to_room[facet[0]][facet[1]] = None
     tilemap.metadata['rooms'] = generated_rooms
     tilemap.metadata['monsters'] = monsters
     tilemap.metadata['tile_to_room'] = tile_to_room

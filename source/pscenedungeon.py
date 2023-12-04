@@ -44,6 +44,9 @@ class PSceneDungeon(PSceneWorld):
         self.player.set_position(Vector2(18.5, 45))
         self.add_world_object(self.player, 2)
 
+        self.remain_monsters = 0
+        self.current_room = None
+
         import scenemanagement
         self.portal = Portal(self.tilemap, self.player, scenemanagement.load_scene_village)
         self.portal.set_position(Vector2(18.5, 45))
@@ -67,19 +70,12 @@ class PSceneDungeon(PSceneWorld):
         r = self.tilemap.metadata['tile_to_room'][floor(v.x)][floor(v.y)]
 
         if r is not None and r not in self.rooms_visited:
-            if r.name == 'BOSS ROOM':
-                bgm = get_music('music03.mp3')
-                bgm.set_volume(50)
-                bgm.repeat_play()
-            for monster_type, x, y in self.tilemap.metadata['monsters'][r]:
-                monster = monster_type(self.tilemap)
-                monster.set_position(Vector2(x + 0.5, y))
-                self.add_world_object(monster)
-                for _ in range(8):
-                    dust_object = TrailDust(self.tilemap, Vector2(random.random() - 0.5, random.random() - 0.5) * 2)
-                    dust_object.set_position(monster.get_position() + Vector2(0, 0.1))
-                    self.add_world_object(dust_object, 1)
+            self.on_enter_new_room(r)
             self.rooms_visited.add(r)
+
+        if self.current_room is not None:
+            if self.remain_monsters <= 0:
+                self.on_clear_new_room(self.current_room)
 
         self.camera_size = lerp(self.camera_size, 4 if r else 2.5, delta_time * 4)
         self.camera_shake = lerp(self.camera_shake, 0, delta_time * 3)
@@ -93,9 +89,43 @@ class PSceneDungeon(PSceneWorld):
     def on_generate_dungeon(self):
         pass
 
+    def notify_monster_kill(self):
+        self.remain_monsters -= 1
+
     def shake_camera(self, value = 1):
         self.camera_shake = value
 
+    def on_enter_new_room(self, room):
+        if room.name == 'START ROOM':
+            return
+        self.current_room = room
+        self.remain_monsters = 0
+        if room.name == 'BOSS ROOM':
+            bgm = get_music('music03.mp3')
+            bgm.set_volume(50)
+            bgm.repeat_play()
+        for monster_type, x, y in self.tilemap.metadata['monsters'][room]:
+            monster = monster_type(self.tilemap)
+            monster.set_position(Vector2(x + 0.5, y))
+            self.add_world_object(monster)
+            for _ in range(8):
+                dust_object = TrailDust(self.tilemap, Vector2(random.random() - 0.5, random.random() - 0.5) * 2)
+                dust_object.set_position(monster.get_position() + Vector2(0, 0.1))
+                self.add_world_object(dust_object, 1)
+            self.remain_monsters += 1
+        for facet_position in room.get_facet_positions():
+            self.tilemap.set_tile(facet_position[0], facet_position[1], 1, False)
+        get_sound('Drafted_1b.wav').play()
+
+    def on_clear_new_room(self, room):
+        self.current_room = None
+        for facet in room.get_facet_positions():
+            for _ in range(8):
+                dust_object = TrailDust(self.tilemap, Vector2(random.random() - 0.5, random.random() - 0.5) * 4)
+                dust_object.set_position(Vector2(facet[0] + 0.5, facet[1] + 0.5))
+                self.add_world_object(dust_object, 1)
+            self.tilemap.set_tile(facet[0], facet[1], -1, False)
+        get_sound('DraftOff.wav').play()
 
 class InterfaceDungeon(PObject):
     coin_sprites = None
