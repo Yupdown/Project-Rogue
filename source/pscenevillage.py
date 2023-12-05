@@ -50,11 +50,17 @@ class PSceneVillage(PSceneWorld):
         generate_tilemap_village(self.tilemap, 32, 32)
         self.add_element(self.tilemap)
 
+        import scenemanagement
+        self.portal = Portal(self.tilemap, scenemanagement.load_scene_dungeon)
+        self.portal.set_position(Vector2(16, 9.5))
+        self.add_world_object(self.portal)
+
         self.ui_main_menu = None
         if not globalvariables.SHOW_MAIN_MENU:
             self.start_game()
-
-        camera._position = Vector2(16, 8)
+            camera._position = Vector2(8, 9)
+        else:
+            camera._position = Vector2(16, 18)
 
         if globalvariables.SHOW_MAIN_MENU:
             self.ui_main_menu = InterfaceMainMenu()
@@ -64,7 +70,7 @@ class PSceneVillage(PSceneWorld):
     def update(self, delta_time):
         super().update(delta_time)
 
-        new_campos = lerp(camera._position, Vector2(16, 8) if self.player is None else self.player.get_position(), delta_time * 8)
+        new_campos = lerp(camera._position, Vector2(16, 9) if self.player is None else self.player.get_position(), delta_time * 6)
         hsw = camera._size * get_canvas_width() / get_canvas_height()
         new_campos = Vector2(clamp(hsw, new_campos.x, 32 - hsw), new_campos.y)
         magnitude = clamp(-0.5, (new_campos - camera._position).x * 50, 0.5)
@@ -79,14 +85,10 @@ class PSceneVillage(PSceneWorld):
     def start_game(self):
         if self.ui_main_menu is not None:
             self.remove_element(self.ui_main_menu)
+            self.ui_main_menu = None
         self.player = Player(self.tilemap)
         self.player.set_position(Vector2(8, 9))
         self.add_world_object(self.player, 2)
-
-        import scenemanagement
-        self.portal = Portal(self.tilemap, self.player, scenemanagement.load_scene_dungeon)
-        self.portal.set_position(Vector2(16, 9.5))
-        self.add_world_object(self.portal)
 
 
 class InterfaceMainMenu(PObject):
@@ -127,6 +129,7 @@ class InterfaceMainMenu(PObject):
         super().__init__()
         if InterfaceMainMenu.panel_sprite is None:
             InterfaceMainMenu.panel_sprite = get_image('splash_solid.png')
+        self.time = 0
         self.figure = PlayerFigure()
         self.add_element(self.figure)
         self.buttons = [
@@ -141,6 +144,10 @@ class InterfaceMainMenu(PObject):
             self.add_element(obj)
             self.ui_buttons.append(obj)
 
+        self.ui_title = PTextUIObject('Project-Rogue')
+        self.ui_title.set_position(Vector2(72, get_canvas_height() - 100))
+        self.add_element(self.ui_title)
+
         self.index = 0
         self.select_index(self.index)
 
@@ -149,7 +156,11 @@ class InterfaceMainMenu(PObject):
         self.figure.change_outfit(InterfaceMainMenu.outfits[self.index_outfit])
 
     def select_index(self, new_index):
+        button = self.ui_buttons[self.index]
+        button.set_position(Vector2(72, button.get_position().y))
+
         self.index = new_index
+
         for index in range(len(self.buttons)):
             self.ui_buttons[index].set_text(('> ' if index == new_index else '') + self.buttons[index][0])
 
@@ -163,12 +174,17 @@ class InterfaceMainMenu(PObject):
         self.figure.change_outfit(outfit)
 
     def update(self, delta_time):
+        self.time += delta_time
+
         if get_keydown(SDLK_s) or get_keydown(SDLK_DOWN):
             self.select_index((self.index + 1) % len(self.buttons))
         if get_keydown(SDLK_w) or get_keydown(SDLK_UP):
             self.select_index((self.index + len(self.buttons) - 1) % len(self.buttons))
         if get_keydown(SDLK_SPACE) or get_keydown(SDLK_RETURN):
             self.buttons[self.index][1]()
+
+        button = self.ui_buttons[self.index]
+        button.set_position(Vector2(72 + abs(sin(self.time * 4)) * 8, button.get_position().y))
 
         self.figure.update(delta_time)
 

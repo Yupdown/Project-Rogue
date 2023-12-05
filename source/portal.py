@@ -6,8 +6,11 @@ from worldobject import *
 class Portal(WorldObject):
     sprites = None
 
-    def __init__(self, tile_map, player, portal_callback):
+    def __init__(self, tile_map, portal_callback):
         super().__init__(tile_map)
+        self.collision_tag = 'portal'
+        self.collision_bounds = (-0.5, -0.25, 0.5, 0.75)
+
         if Portal.sprites is None:
             image = get_image('portal_stripes3.png')
             Portal.sprites = [PSprite(image, (i % 2) * 512, (i // 2) * 512, 512, 512) for i in range(4)]
@@ -22,7 +25,6 @@ class Portal(WorldObject):
         self.indicator.set_scale(Vector2(1, 0))
         self.add_element(self.indicator)
 
-        self.player = player
         self.portal_callback = portal_callback
         self.near = False
 
@@ -32,7 +34,7 @@ class Portal(WorldObject):
         self.visual.set_rotation(self.time * -360)
         self.indicator.set_position(Vector2(0, sin(self.time * 10) * 0.05 + 1.2))
 
-        near = (self.player.get_position() - self.get_position()).sqr_magnitude() < 1
+        near = len(self.get_parent().get_collision_objects_from_object('player', self)) > 0
         if near and not self.near:
             self.indicator.set_scale(Vector2(1, 2))
         self.indicator.set_scale(lerp(self.indicator.get_scale(), Vector2(1, 1) if near else Vector2(1, 0), delta_time * 24))

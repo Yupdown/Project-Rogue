@@ -52,7 +52,7 @@ class PSceneDungeon(PSceneWorld):
         self.current_room = None
 
         import scenemanagement
-        self.portal = Portal(self.tilemap, self.player, scenemanagement.load_scene_village)
+        self.portal = Portal(self.tilemap, scenemanagement.load_scene_village)
         self.portal.set_position(portal_position)
         self.add_world_object(self.portal)
 
