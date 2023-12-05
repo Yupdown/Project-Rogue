@@ -2,7 +2,6 @@ import random
 from picowork.pspriteuiobject import *
 from worldobject import *
 from avatar import *
-from damageeffect import *
 from coin import *
 from fireball import *
 from slasheffect import *
@@ -35,10 +34,6 @@ class Monster(WorldObject):
         self.behaviour.damage()
         self.behaviour.direction = -sender.direction
 
-        damage_effect = DamageEffect(self.ref_tile_map)
-        damage_effect.set_position(self.get_position())
-        self.get_parent().add_world_object(damage_effect)
-
         if self.life <= 0:
             self.kill()
 
@@ -47,7 +42,7 @@ class Monster(WorldObject):
             coin = Coin(self.ref_tile_map)
             coin.velocity = Vector2(random.random() * 2 - 1, random.random()) * 10
             coin.set_position(self.get_position())
-            self.get_parent().add_world_object(coin)
+            self.get_parent().add_world_object(coin, 1)
         sfx = get_sound('worm-death-2.ogg')
         sfx.set_volume(100)
         sfx.play()
@@ -132,7 +127,7 @@ class MonsterGoblin(Monster):
         slash_effect = SlashEffect(self.ref_tile_map)
         slash_effect.set_position(self.get_position())
         slash_effect.set_scale(Vector2(-self.behaviour.direction, 1))
-        self.get_parent().add_world_object(slash_effect)
+        self.get_parent().add_world_object(slash_effect, 1)
 
         sfx = get_sound('Swish2_1a.wav')
         sfx.play()
@@ -171,12 +166,12 @@ class MonsterWizard(Monster):
         instance.set_position(self.get_position() + Vector2(self.behaviour.direction * 0.25, 0.25))
         instance.force = Vector2(self.behaviour.direction * 4, 0)
         instance.velocity = instance.force
-        self.get_parent().add_world_object(instance)
+        self.get_parent().add_world_object(instance, 1)
 
         slash_effect = SlashEffect(self.ref_tile_map)
         slash_effect.set_position(self.get_position())
         slash_effect.set_scale(Vector2(-self.behaviour.direction, 1))
-        self.get_parent().add_world_object(slash_effect)
+        self.get_parent().add_world_object(slash_effect, 1)
 
         sfx = get_sound('Swish2_1c.wav')
         sfx.play()

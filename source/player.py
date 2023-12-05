@@ -3,6 +3,7 @@ from worldobject import *
 from avatar import *
 from traildust import *
 from slasheffect import *
+from damageeffect import *
 
 
 class Player(WorldObject):
@@ -55,7 +56,7 @@ class Player(WorldObject):
             slash_effect = SlashEffect(self.ref_tile_map)
             slash_effect.set_position(self.get_position())
             slash_effect.set_scale(Vector2(-self.direction, 1))
-            self.get_parent().add_world_object(slash_effect)
+            self.get_parent().add_world_object(slash_effect, 1)
             self.velocity += Vector2(self.direction * 3, 0)
             self.attack_time = 0.4
             self.attack_type = (self.attack_type + 1) % 2
@@ -67,13 +68,16 @@ class Player(WorldObject):
             offset_x = self.direction * 0.5
             rect = (v.x + offset_x - 0.5, v.y, v.x + offset_x + 0.5, v.y + 0.5)
 
-            hit_monsters = self.get_parent().get_collision_objects('monster', rect)
+            hit_monsters = self.get_parent().get_collision_objects('monster', rect) + self.get_parent().get_collision_objects('boss', rect)
             if hit_monsters:
                 self.get_parent().shake_camera()
                 sfx = get_sound(['Bullet_Ground_1c.wav', 'Bullet_Ground_1d.wav'][self.attack_type])
                 sfx.play()
             for hit_monster in hit_monsters:
                 hit_monster.apply_damage(10, self)
+                damage_effect = DamageEffect(self.ref_tile_map)
+                damage_effect.set_position(hit_monster.get_position())
+                self.get_parent().add_world_object(damage_effect, 1)
 
         coins = self.get_parent().get_collision_objects_from_object('coin', self)
         got_coin = False
@@ -83,6 +87,7 @@ class Player(WorldObject):
             got_coin = True
             self.coins += 1
             self.get_parent().remove_world_object(coin)
+
         if got_coin:
             sfx = get_sound('8BIT_RETRO_Coin_Collect_Two_Note_Twinkle_Fast_mono.wav')
             sfx.set_volume(15)
@@ -92,8 +97,8 @@ class Player(WorldObject):
             monsters = self.get_parent().get_collision_objects_from_object('monster', self)
             projectiles = self.get_parent().get_collision_objects_from_object('projectile', self)
             if projectiles:
-                self.damage()
                 self.get_parent().remove_world_object(projectiles[0])
+                self.damage()
             elif monsters:
                 self.damage()
 

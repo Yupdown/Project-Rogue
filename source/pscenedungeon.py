@@ -5,6 +5,7 @@ from picowork.pspriteuiobject import *
 from picowork.pfixedbackground import *
 from picowork.ptextuiobject import *
 from tilemapgeneration import *
+from monsterboss import *
 from tilemap import *
 from portal import *
 import globalvariables
@@ -40,7 +41,7 @@ class PSceneDungeon(PSceneWorld):
         self.add_element(background_near2)
 
         self.tilemap = Tilemap(160, 100, 'terr02_%02d.png', ['fill03.png', 'fill02.png'])
-        self.add_element(self.tilemap)
+        self.add_element(self.tilemap, 1)
 
         portal_position = Vector2(18, 50)
 
@@ -54,7 +55,7 @@ class PSceneDungeon(PSceneWorld):
         import scenemanagement
         self.portal = Portal(self.tilemap, scenemanagement.load_scene_village)
         self.portal.set_position(portal_position)
-        self.add_world_object(self.portal)
+        self.add_world_object(self.portal, 1)
 
         camera._position = self.player.get_position()
 
@@ -124,13 +125,11 @@ class PSceneDungeon(PSceneWorld):
         self.current_room = room
         self.remain_monsters = 0
         if room.name == 'BOSS ROOM':
-            bgm = get_music('music03.mp3')
-            bgm.set_volume(50)
-            bgm.repeat_play()
+            self.on_enter_boss_room(room)
         for monster_type, x, y in self.tilemap.metadata['monsters'][room]:
             monster = monster_type(self.player, self.tilemap)
             monster.set_position(Vector2(x + 0.5, y))
-            self.add_world_object(monster)
+            self.add_world_object(monster, 1)
             for _ in range(8):
                 dust_object = TrailDust(self.tilemap, Vector2(random.random() - 0.5, random.random() - 0.5) * 2)
                 dust_object.set_position(monster.get_position() + Vector2(0, 0.1))
@@ -140,8 +139,21 @@ class PSceneDungeon(PSceneWorld):
             self.tilemap.set_tile(facet_position[0], facet_position[1], 1, False)
         get_sound('Drafted_1b.wav').play()
 
+    def on_enter_boss_room(self, room):
+        self.monster_boss = MonsterBoss(self.player, self.tilemap)
+        self.monster_boss.set_position(Vector2(140, 45))
+        self.add_world_object(self.monster_boss, 1)
+        self.monster_boss.on_add_element()
+
+        self.remain_monsters = 1
+        bgm = get_music('music03.mp3')
+        bgm.set_volume(50)
+        bgm.repeat_play()
+
     def on_clear_new_room(self, room):
         self.current_room = None
+        if room.name == 'BOSS ROOM':
+            self.on_clear_boss_room(room)
         for facet in room.get_facet_positions():
             for _ in range(8):
                 dust_object = TrailDust(self.tilemap, Vector2(random.random() - 0.5, random.random() - 0.5) * 4)
@@ -149,6 +161,9 @@ class PSceneDungeon(PSceneWorld):
                 self.add_world_object(dust_object, 1)
             self.tilemap.set_tile(facet[0], facet[1], -1, False)
         get_sound('DraftOff.wav').play()
+
+    def on_clear_boss_room(self, room):
+        self.portal.set_position(Vector2(140, 44))
 
 
 class InterfaceDungeon(PObject):
@@ -253,7 +268,7 @@ class InterfacePlayerLife(PObject):
         self.sprite_fill = get_image('life_value.png')
 
     def on_draw(self):
-        v = Vector2(self._concatenated_position.x, self._concatenated_position.y)
+        v = self._concatenated_position
         w = self.sprite_back.w * self._concatenated_scale.x * UI_SCALE_MULTIPLY
         h = self.sprite_back.h * self._concatenated_scale.y * UI_SCALE_MULTIPLY
         value = self.ref_player.life
