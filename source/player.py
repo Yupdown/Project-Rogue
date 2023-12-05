@@ -8,7 +8,7 @@ from slasheffect import *
 class Player(WorldObject):
     def __init__(self, tile_map):
         super().__init__(tile_map)
-        self.renderer = Avatar(get_image('werewolf01.png')) #
+        self.renderer = Avatar(get_image(globalvariables.CHARACTER_OUTFIT))
         self.add_element(self.renderer)
         self.life = 10
         self.coins = 0

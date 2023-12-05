@@ -63,7 +63,7 @@ class Avatar(PObject):
         self.joint_hips.add_element(self.joint_shoulder_r)
         self.joint_hips.add_element(self.sobj_head)
 
-        self.sobj_head.add_element(self.sobj_head_back)
+        # self.sobj_head.add_element(self.sobj_head_back)
 
         self.root.add_element(self.joint_hips)
 

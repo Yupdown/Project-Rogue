@@ -6,6 +6,7 @@ from . import presource
 
 time_begin = time.time()
 time_current = 0
+quit_event = False
 
 def initialize(w, h):
     open_canvas(w, h)
@@ -35,12 +36,13 @@ def initialize(w, h):
 
 
 def event_update():
+    global quit_event
     flag = True
     events = get_events()
     pinput.process_input(events)
     for event in events:
         flag *= event.type != SDL_QUIT
-    return flag
+    return flag and not quit_event
 
 
 def update():
@@ -55,6 +57,11 @@ def render_update():
     clear_canvas()
     current_scene.draw()
     update_canvas()
+
+
+def quit_application():
+    global quit_event
+    quit_event = True
 
 
 def close():

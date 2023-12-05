@@ -260,5 +260,5 @@ class InterfacePlayerLife(PObject):
         for index in range(5):
             factor = clamp(0, (value - index * 2) * 0.5, 1)
             factor = ceil(self.sprite_fill.w * factor) / self.sprite_fill.w
-            self.sprite_back.draw_to_origin(v.x + index * 75, v.y - h, w, h)
-            self.sprite_fill.clip_draw_to_origin(0, 0, ceil(self.sprite_fill.w * factor), self.sprite_fill.h, v.x + index * 75, v.y - h, w * factor, h)
+            self.sprite_back.draw_to_origin(v.x + index * 72.5, v.y - h, w, h)
+            self.sprite_fill.clip_draw_to_origin(0, 0, ceil(self.sprite_fill.w * factor), self.sprite_fill.h, v.x + index * 72.5, v.y - h, w * factor, h)

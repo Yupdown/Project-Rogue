@@ -134,6 +134,9 @@ class MonsterGoblin(Monster):
         slash_effect.set_scale(Vector2(-self.behaviour.direction, 1))
         self.get_parent().add_world_object(slash_effect)
 
+        sfx = get_sound('Swish2_1a.wav')
+        sfx.play()
+
 
 class MonsterWizard(Monster):
     def __init__(self, player, tile_map):
@@ -174,6 +177,9 @@ class MonsterWizard(Monster):
         slash_effect.set_position(self.get_position())
         slash_effect.set_scale(Vector2(-self.behaviour.direction, 1))
         self.get_parent().add_world_object(slash_effect)
+
+        sfx = get_sound('Swish2_1c.wav')
+        sfx.play()
 
 
 class MonsterBehaviour:
@@ -226,13 +232,13 @@ class MonsterGoblinBehaviour(MonsterBehaviour):
         super().update(owner, player, tilemap, delta_time)
 
     def move_interrupt(self):
-        return super().move_interrupt() or self.attack_time > 0.5
+        return super().move_interrupt() or self.attack_time > 1
 
 
 class MonsterWizardBehaviour(MonsterBehaviour):
     def __init__(self):
         super().__init__()
-        self.attack_time = 0
+        self.attack_time = random.random() * 2
 
     def update(self, owner, player, tilemap, delta_time):
         if self.damage_time <= 0:
