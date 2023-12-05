@@ -41,6 +41,11 @@ class PSceneVillage(PSceneWorld):
         wagon.set_position(Vector2(12, 9.5))
         self.add_element(wagon)
 
+        donkey = PSpriteObject('donkey.png')
+        donkey.set_position(Vector2(20, 9.3))
+        donkey.set_scale(Vector2(-1, 1))
+        self.add_element(donkey)
+
         character = PSpriteObject("merchant_01.png")
         character.set_position(Vector2(19, 9.3))
         character.set_scale(Vector2(-1, 1))
@@ -155,19 +160,26 @@ class InterfaceMainMenu(PObject):
         globalvariables.CHARACTER_OUTFIT = InterfaceMainMenu.outfits[self.index_outfit]
         self.figure.change_outfit(InterfaceMainMenu.outfits[self.index_outfit])
 
+        self.sfx = get_sound('TickHigh.wav')
+        self.sfx.set_volume(50)
+
     def select_index(self, new_index):
         button = self.ui_buttons[self.index]
         button.set_position(Vector2(72, button.get_position().y))
-
         self.index = new_index
-
         for index in range(len(self.buttons)):
             self.ui_buttons[index].set_text(('> ' if index == new_index else '') + self.buttons[index][0])
 
     def start_game(self):
+        sfx = get_sound('CommsWindow_Close.wav')
+        sfx.set_volume(50)
+        sfx.play()
         self.get_parent().start_game()
 
     def change_outfit(self):
+        sfx = get_sound('CommsWindow_Open.wav')
+        sfx.set_volume(50)
+        sfx.play()
         self.index_outfit = (self.index_outfit + 1) % len(InterfaceMainMenu.outfits)
         outfit = InterfaceMainMenu.outfits[self.index_outfit]
         globalvariables.CHARACTER_OUTFIT = outfit
@@ -177,10 +189,13 @@ class InterfaceMainMenu(PObject):
         self.time += delta_time
 
         if get_keydown(SDLK_s) or get_keydown(SDLK_DOWN):
+            self.sfx.play()
             self.select_index((self.index + 1) % len(self.buttons))
         if get_keydown(SDLK_w) or get_keydown(SDLK_UP):
+            self.sfx.play()
             self.select_index((self.index + len(self.buttons) - 1) % len(self.buttons))
         if get_keydown(SDLK_SPACE) or get_keydown(SDLK_RETURN):
+            self.sfx.play()
             self.buttons[self.index][1]()
 
         button = self.ui_buttons[self.index]
