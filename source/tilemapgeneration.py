@@ -1,8 +1,6 @@
 from collections import *
 import random
 import time
-from pico2d import *
-from math import *
 from picowork.putil import *
 from picowork.presource import *
 
